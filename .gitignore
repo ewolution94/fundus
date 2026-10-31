@@ -1,0 +1,7 @@
+/node_modules/
+/dist/
+/test-results/
+/tests/e2e/out/
+.DS_Store
+*.log
+/tests/fixtures/out/

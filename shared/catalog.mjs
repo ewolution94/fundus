@@ -1,0 +1,317 @@
+// Every tool Fundus has, in one list: the page (home, search, detection, chaining), the server (each
+// tool's address, title and link preview) and the tests read it. A new tool is an entry here plus
+// its folder in src/tools/<id>/.
+//
+// Article numbers: the hundreds are the chip (100 Photo … 900 Developer), the rest the tool's place
+// in it, so a tool's number never changes once it's out. Plain JavaScript, shared with the
+// zero-dependency server.
+
+/** @typedef {'photo' | 'pdf' | 'text' | 'scratch' | 'numbers' | 'dev'} Chip */
+/** @typedef {{ en: string, de: string }} Words */
+
+/** The chips, in the register's order, with each one's hundred. */
+export const CHIPS = /** @type {const} */ ([
+  { id: 'photo', no: 100, name: { en: 'Photo', de: 'Foto' } },
+  { id: 'pdf', no: 200, name: { en: 'PDF', de: 'PDF' } },
+  { id: 'text', no: 300, name: { en: 'Text', de: 'Text' } },
+  { id: 'scratch', no: 400, name: { en: 'From scratch', de: 'Ohne Vorlage' } },
+  { id: 'numbers', no: 500, name: { en: 'Numbers & time', de: 'Zahlen & Zeit' } },
+  { id: 'dev', no: 900, name: { en: 'Developer', de: 'Entwickler' } },
+]);
+
+/**
+ * @typedef {object} Tool
+ * @property {string} id       the folder in src/tools/
+ * @property {Chip} chip
+ * @property {number} no       the article number, F-<no>
+ * @property {string} path     its address, /<path>
+ * @property {Words} name
+ * @property {Words} desc      one line, for the list and the link preview
+ * @property {Words} takes     what goes in, as the list's "takes → gives" shows it
+ * @property {Words} gives
+ * @property {string[]} words  more ways people ask for it, both languages, lower case
+ * @property {string[]} accepts what it opens with already in: MIME patterns (image/*), `.ext`, or a
+ *                              text shape (text, link, number, date, json, base64, timestamp)
+ * @property {string[]} shared  the shared settings it reads (src/lib/settings.svelte.ts)
+ */
+
+/** @type {Tool[]} */
+export const TOOLS = [
+  // 100 Photo
+  {
+    id: 'convert', chip: 'photo', no: 101, path: 'convert-photos',
+    name: { en: 'Convert photos', de: 'Fotos umwandeln' },
+    desc: { en: 'HEIC, PNG or WebP to JPG, PNG or WebP, many at once.', de: 'HEIC, PNG oder WebP zu JPG, PNG oder WebP, viele auf einmal.' },
+    takes: { en: 'HEIC · PNG · WebP · AVIF', de: 'HEIC · PNG · WebP · AVIF' },
+    gives: { en: 'JPG · PNG · WebP', de: 'JPG · PNG · WebP' },
+    words: ['umwandeln', 'konvertieren', 'convert', 'heic', 'heif', 'jpg', 'jpeg', 'png', 'webp', 'avif', 'format', 'iphone'],
+    accepts: ['image/*', '.heic', '.heif'],
+    shared: ['photoFormat', 'quality', 'stripLocation', 'names', 'zipFrom'],
+  },
+  {
+    id: 'shrink', chip: 'photo', no: 102, path: 'shrink-a-photo',
+    name: { en: 'Shrink a photo', de: 'Foto verkleinern' },
+    desc: { en: 'To a size you name, like under 2 MB.', de: 'Auf eine Größe, die du nennst, etwa unter 2 MB.' },
+    takes: { en: 'Any photo', de: 'Jedes Foto' },
+    gives: { en: 'JPG · WebP', de: 'JPG · WebP' },
+    words: ['verkleinern', 'komprimieren', 'compress', 'smaller', 'kleiner', 'upload', 'kb', 'mb', 'dateigröße', 'file size'],
+    accepts: ['image/*', '.heic', '.heif'],
+    shared: ['photoFormat', 'stripLocation', 'sizeTarget', 'names', 'zipFrom'],
+  },
+  {
+    id: 'resize', chip: 'photo', no: 103, path: 'resize-and-crop',
+    name: { en: 'Resize & crop', de: 'Größe & Zuschnitt' },
+    desc: { en: 'Free, or square, 16:9, profile picture.', de: 'Frei, quadratisch, 16:9 oder als Profilbild.' },
+    takes: { en: 'Any photo', de: 'Jedes Foto' },
+    gives: { en: 'The same format', de: 'Dasselbe Format' },
+    words: ['zuschneiden', 'skalieren', 'crop', 'resize', 'größe', 'size', 'square', 'quadrat', 'profilbild', 'avatar', 'pixel'],
+    accepts: ['image/*', '.heic', '.heif'],
+    shared: ['photoFormat', 'quality', 'stripLocation', 'units', 'names'],
+  },
+  {
+    id: 'location', chip: 'photo', no: 104, path: 'remove-location',
+    name: { en: 'Remove location', de: 'Standort entfernen' },
+    desc: { en: 'See what a photo gives away, then strip it.', de: 'Sieh, was ein Foto verrät, und entferne es.' },
+    takes: { en: 'JPG · PNG · WebP · HEIC', de: 'JPG · PNG · WebP · HEIC' },
+    gives: { en: 'The same photo, without it', de: 'Dasselbe Foto, ohne' },
+    words: ['standort', 'gps', 'exif', 'metadaten', 'metadata', 'privacy', 'datenschutz', 'ort', 'location', 'kamera'],
+    accepts: ['image/*', '.heic', '.heif'],
+    shared: ['names', 'zipFrom'],
+  },
+  {
+    id: 'blur', chip: 'photo', no: 105, path: 'blur-parts',
+    name: { en: 'Blur parts', de: 'Stellen verpixeln' },
+    desc: { en: 'Pixelate or black out names, faces and numbers.', de: 'Namen, Gesichter und Nummern verpixeln oder schwärzen.' },
+    takes: { en: 'Any photo', de: 'Jedes Foto' },
+    gives: { en: 'JPG · PNG', de: 'JPG · PNG' },
+    words: ['verpixeln', 'schwärzen', 'unkenntlich', 'redact', 'pixelate', 'hide', 'blur', 'verstecken', 'kennzeichen', 'gesicht'],
+    accepts: ['image/*', '.heic', '.heif'],
+    shared: ['photoFormat', 'quality', 'stripLocation', 'names'],
+  },
+  {
+    id: 'topdf', chip: 'photo', no: 106, path: 'photos-to-pdf',
+    name: { en: 'Photos to PDF', de: 'Fotos zu PDF' },
+    desc: { en: 'Scans into one PDF, with page size and margins.', de: 'Scans in ein PDF, mit Seitengröße und Rand.' },
+    takes: { en: 'Photos, scans', de: 'Fotos, Scans' },
+    gives: { en: 'PDF', de: 'PDF' },
+    words: ['scan', 'bilder zu pdf', 'images to pdf', 'jpg to pdf', 'jpg zu pdf', 'dokument', 'document'],
+    accepts: ['image/*', '.heic', '.heif'],
+    shared: ['pageSize', 'quality', 'names'],
+  },
+  // 200 PDF
+  {
+    id: 'arrange', chip: 'pdf', no: 201, path: 'arrange-a-pdf',
+    name: { en: 'Arrange a PDF', de: 'PDF ordnen' },
+    desc: { en: 'Merge, split, reorder, rotate and delete pages.', de: 'Zusammenfügen, teilen, sortieren, drehen, Seiten löschen.' },
+    takes: { en: 'PDFs', de: 'PDFs' },
+    gives: { en: 'PDF', de: 'PDF' },
+    words: ['zusammenfügen', 'merge', 'combine', 'split', 'teilen', 'sortieren', 'reorder', 'drehen', 'rotate', 'löschen', 'delete', 'seiten', 'pages'],
+    accepts: ['application/pdf', '.pdf'],
+    shared: ['names', 'zipFrom'],
+  },
+  {
+    id: 'sign', chip: 'pdf', no: 202, path: 'sign-a-pdf',
+    name: { en: 'Sign a PDF', de: 'PDF unterschreiben' },
+    desc: { en: 'Draw or type a signature, place it, add the date.', de: 'Unterschrift zeichnen oder tippen, platzieren, Datum dazu.' },
+    takes: { en: 'PDF', de: 'PDF' },
+    gives: { en: 'Signed PDF', de: 'Unterschriebenes PDF' },
+    words: ['unterschreiben', 'unterschrift', 'signature', 'sign', 'signieren', 'vertrag', 'contract', 'formular', 'form'],
+    accepts: ['application/pdf', '.pdf'],
+    shared: ['names'],
+  },
+  {
+    id: 'pdfimg', chip: 'pdf', no: 203, path: 'pdf-to-photos',
+    name: { en: 'PDF to photos', de: 'PDF zu Fotos' },
+    desc: { en: 'Every page as a JPG or PNG.', de: 'Jede Seite als JPG oder PNG.' },
+    takes: { en: 'PDF', de: 'PDF' },
+    gives: { en: 'JPG · PNG', de: 'JPG · PNG' },
+    words: ['pdf zu bild', 'pdf to jpg', 'pdf to png', 'export', 'seiten', 'bilder', 'images'],
+    accepts: ['application/pdf', '.pdf'],
+    shared: ['photoFormat', 'quality', 'names', 'zipFrom'],
+  },
+  // 300 Text
+  {
+    id: 'count', chip: 'text', no: 301, path: 'count-words',
+    name: { en: 'Count words', de: 'Wörter zählen' },
+    desc: { en: 'Words, characters, reading time.', de: 'Wörter, Zeichen, Lesezeit.' },
+    takes: { en: 'Text', de: 'Text' },
+    gives: { en: 'Counts', de: 'Zahlen' },
+    words: ['zählen', 'wörter', 'zeichen', 'characters', 'words', 'count', 'lesezeit', 'reading time', 'zeichenzahl'],
+    accepts: ['text'],
+    shared: ['decimal'],
+  },
+  {
+    id: 'clean', chip: 'text', no: 302, path: 'clean-up-text',
+    name: { en: 'Clean up text', de: 'Text aufräumen' },
+    desc: { en: 'Case, stray line breaks, double spaces, sorting.', de: 'Groß- und Kleinschreibung, Umbrüche, doppelte Leerzeichen, sortieren.' },
+    takes: { en: 'Text', de: 'Text' },
+    gives: { en: 'Text', de: 'Text' },
+    words: ['bereinigen', 'aufräumen', 'großschreibung', 'kleinschreibung', 'case', 'umbrüche', 'line breaks', 'leerzeichen', 'spaces', 'sortieren', 'sort', 'duplikate', 'duplicates'],
+    accepts: ['text'],
+    shared: ['names'],
+  },
+  {
+    id: 'compare', chip: 'text', no: 303, path: 'compare-texts',
+    name: { en: 'Compare texts', de: 'Texte vergleichen' },
+    desc: { en: 'What changed between two versions.', de: 'Was sich zwischen zwei Fassungen geändert hat.' },
+    takes: { en: 'Two texts', de: 'Zwei Texte' },
+    gives: { en: 'The changes', de: 'Die Änderungen' },
+    words: ['vergleichen', 'diff', 'unterschied', 'compare', 'changes', 'änderungen', 'versionen'],
+    accepts: ['text'],
+    shared: [],
+  },
+  // 400 From scratch
+  {
+    id: 'qr', chip: 'scratch', no: 401, path: 'qr-code',
+    name: { en: 'Make a QR code', de: 'QR-Code erstellen' },
+    desc: { en: 'A link, guest Wi-Fi or a contact. Scans one too.', de: 'Ein Link, Gäste-WLAN oder ein Kontakt. Liest auch einen.' },
+    takes: { en: 'Link · Wi-Fi · contact', de: 'Link · WLAN · Kontakt' },
+    gives: { en: 'SVG · PNG', de: 'SVG · PNG' },
+    words: ['qr', 'wlan', 'wifi', 'barcode', 'scannen', 'scan', 'code', 'visitenkarte', 'vcard', 'kontakt'],
+    accepts: ['link', 'image/*'],
+    shared: ['names'],
+  },
+  {
+    id: 'password', chip: 'scratch', no: 402, path: 'password',
+    name: { en: 'Make a password', de: 'Passwort erstellen' },
+    desc: { en: 'Strong, or words you can remember.', de: 'Stark, oder aus Wörtern, die man sich merkt.' },
+    takes: { en: 'Nothing', de: 'Nichts' },
+    gives: { en: 'A password', de: 'Ein Passwort' },
+    words: ['passwort', 'kennwort', 'password', 'passphrase', 'pin', 'generator', 'zufall', 'random'],
+    accepts: [],
+    shared: ['passwordWords'],
+  },
+  // 500 Numbers & time
+  {
+    id: 'dates', chip: 'numbers', no: 501, path: 'dates-and-weeks',
+    name: { en: 'Dates & weeks', de: 'Tage & Wochen' },
+    desc: { en: 'Days between, calendar week, weekday, age.', de: 'Tage dazwischen, Kalenderwoche, Wochentag, Alter.' },
+    takes: { en: 'Dates', de: 'Daten' },
+    gives: { en: 'Days · week', de: 'Tage · Woche' },
+    words: ['datum', 'tage', 'kalenderwoche', 'kw', 'alter', 'age', 'wochentag', 'weekday', 'week', 'days between', 'frist', 'deadline'],
+    accepts: ['date'],
+    shared: ['week', 'homeZone'],
+  },
+  {
+    id: 'percent', chip: 'numbers', no: 502, path: 'percent-and-vat',
+    name: { en: 'Percent & VAT', de: 'Prozent & MwSt.' },
+    desc: { en: 'x % of y, change in %, gross and net at 19 and 7 % VAT.', de: 'x % von y, Änderung in %, brutto und netto bei 19 und 7 % MwSt.' },
+    takes: { en: 'Numbers', de: 'Zahlen' },
+    gives: { en: 'Numbers', de: 'Zahlen' },
+    words: ['prozent', 'percent', 'mwst', 'mehrwertsteuer', 'ust', 'umsatzsteuer', 'vat', 'tax', 'brutto', 'netto', 'gross', 'net', 'rabatt', 'discount'],
+    accepts: ['number'],
+    shared: ['decimal'],
+  },
+  {
+    id: 'units', chip: 'numbers', no: 503, path: 'convert-units',
+    name: { en: 'Convert units', de: 'Einheiten umrechnen' },
+    desc: { en: 'Length, weight, temperature, volume, the kitchen.', de: 'Länge, Gewicht, Temperatur, Volumen, die Küche.' },
+    takes: { en: 'A value', de: 'Ein Wert' },
+    gives: { en: 'Other units', de: 'Andere Einheiten' },
+    words: ['einheiten', 'umrechnen', 'units', 'gramm', 'grams', 'cups', 'tassen', 'zoll', 'inch', 'fahrenheit', 'celsius', 'meilen', 'miles', 'unzen', 'ounces', 'pfund', 'pounds'],
+    accepts: ['number'],
+    shared: ['units', 'decimal'],
+  },
+  {
+    id: 'zones', chip: 'numbers', no: 504, path: 'time-zones',
+    name: { en: 'Time zones', de: 'Zeitzonen' },
+    desc: { en: 'What time it is there, and a time that suits both.', de: 'Wie spät es dort ist, und eine Zeit, die beiden passt.' },
+    takes: { en: 'A time', de: 'Eine Uhrzeit' },
+    gives: { en: 'Times', de: 'Uhrzeiten' },
+    words: ['zeitzone', 'uhrzeit', 'meeting', 'time zone', 'timezone', 'utc', 'gmt', 'zeitverschiebung', 'world clock', 'weltuhr'],
+    accepts: [],
+    shared: ['homeZone'],
+  },
+  {
+    id: 'bill', chip: 'numbers', no: 505, path: 'split-a-bill',
+    name: { en: 'Split a bill', de: 'Rechnung teilen' },
+    desc: { en: 'People, tip, who paid what.', de: 'Personen, Trinkgeld, wer was bezahlt hat.' },
+    takes: { en: 'Amounts', de: 'Beträge' },
+    gives: { en: 'Shares', de: 'Anteile' },
+    words: ['rechnung', 'trinkgeld', 'aufteilen', 'tip', 'split', 'bill', 'restaurant', 'wg', 'kosten', 'schulden'],
+    accepts: ['number'],
+    shared: ['decimal'],
+  },
+  {
+    id: 'timers', chip: 'numbers', no: 506, path: 'timers',
+    name: { en: 'Timers', de: 'Timer' },
+    desc: { en: 'Several at once, a stopwatch; the screen stays on.', de: 'Mehrere zugleich, eine Stoppuhr; der Bildschirm bleibt an.' },
+    takes: { en: 'Minutes', de: 'Minuten' },
+    gives: { en: 'An alarm', de: 'Ein Signal' },
+    words: ['stoppuhr', 'wecker', 'eieruhr', 'stopwatch', 'timer', 'countdown', 'kurzzeitwecker', 'runden', 'laps'],
+    accepts: [],
+    shared: [],
+  },
+  // 900 Developer (behind the switch in Settings)
+  {
+    id: 'json', chip: 'dev', no: 901, path: 'format-json',
+    name: { en: 'Format JSON', de: 'JSON formatieren' },
+    desc: { en: 'Indent, check and minify JSON.', de: 'JSON einrücken, prüfen und verkleinern.' },
+    takes: { en: 'JSON', de: 'JSON' },
+    gives: { en: 'JSON', de: 'JSON' },
+    words: ['json', 'format', 'pretty', 'minify', 'validate', 'prüfen', 'einrücken'],
+    accepts: ['json', 'application/json', '.json'],
+    shared: ['names'],
+  },
+  {
+    id: 'base64', chip: 'dev', no: 902, path: 'base64',
+    name: { en: 'Base64', de: 'Base64' },
+    desc: { en: 'Encode and decode text or a file.', de: 'Text oder eine Datei kodieren und dekodieren.' },
+    takes: { en: 'Text · file', de: 'Text · Datei' },
+    gives: { en: 'Base64', de: 'Base64' },
+    words: ['base64', 'encode', 'decode', 'kodieren', 'dekodieren', 'data url'],
+    accepts: ['base64', 'text'],
+    shared: ['names'],
+  },
+  {
+    id: 'url', chip: 'dev', no: 903, path: 'encode-urls',
+    name: { en: 'Encode URLs', de: 'URLs kodieren' },
+    desc: { en: 'Percent-encode a link, or read one.', de: 'Einen Link prozentkodieren, oder lesen.' },
+    takes: { en: 'Link', de: 'Link' },
+    gives: { en: 'Link', de: 'Link' },
+    words: ['url', 'encode', 'decode', 'percent', 'link', 'query', 'parameter', 'kodieren'],
+    accepts: ['link'],
+    shared: [],
+  },
+  {
+    id: 'stamp', chip: 'dev', no: 904, path: 'timestamps',
+    name: { en: 'Timestamps', de: 'Zeitstempel' },
+    desc: { en: 'Unix time to a date and back.', de: 'Unix-Zeit zu einem Datum und zurück.' },
+    takes: { en: 'Number · date', de: 'Zahl · Datum' },
+    gives: { en: 'Date · number', de: 'Datum · Zahl' },
+    words: ['timestamp', 'unix', 'epoch', 'zeitstempel', 'iso', 'iso 8601', 'utc'],
+    accepts: ['timestamp', 'date'],
+    shared: ['homeZone'],
+  },
+  {
+    id: 'uuid', chip: 'dev', no: 905, path: 'uuids',
+    name: { en: 'UUIDs', de: 'UUIDs' },
+    desc: { en: 'v4 or v7 UUIDs, up to a hundred, and one checked.', de: 'v4- oder v7-UUIDs, bis zu hundert, und eine geprüft.' },
+    takes: { en: 'Nothing', de: 'Nichts' },
+    gives: { en: 'UUIDs', de: 'UUIDs' },
+    words: ['uuid', 'guid', 'id', 'v4', 'v7', 'random'],
+    accepts: ['uuid'],
+    shared: ['homeZone'],
+  },
+  {
+    id: 'hash', chip: 'dev', no: 906, path: 'hashes',
+    name: { en: 'Hashes', de: 'Hashes' },
+    desc: { en: 'SHA-256 and others, of a text or a file.', de: 'SHA-256 und andere, von einem Text oder einer Datei.' },
+    takes: { en: 'Text · file', de: 'Text · Datei' },
+    gives: { en: 'Hash', de: 'Hash' },
+    words: ['hash', 'sha', 'sha256', 'sha-256', 'md5', 'checksum', 'prüfsumme'],
+    accepts: ['text', '*'],
+    shared: [],
+  },
+];
+
+/** `F-102` */
+export const articleNo = (/** @type {Tool} */ tool) => `F-${tool.no}`;
+
+export const toolById = (/** @type {string} */ id) => TOOLS.find((t) => t.id === id);
+
+/** The tool at an address like `/shrink-a-photo` (with or without the slash or a trailing one). */
+export const toolByPath = (/** @type {string} */ pathname) => {
+  const p = pathname.replace(/^\/+|\/+$/g, '');
+  return TOOLS.find((t) => t.path === p);
+};

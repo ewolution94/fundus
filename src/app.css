@@ -1,0 +1,516 @@
+/* Fundus, look B: the parts index (plans/fundus/looks.html, the user's pick, 2026-10-31).
+   Every tool an article with a number whose hundreds are its chip (F-102); every tool page a spec
+   sheet; ink on paper, ruled lines, and one highlighter yellow that marks the choice. Schibsted
+   Grotesk for words, Martian Mono for numbers and labels.
+
+   The classes below are the kit every tool is built from (src/tools/README.md lists them). */
+
+/* Folio's tokens without its fonts.css: Fundus sets its own two below, and the Folio elements read
+   them through --ewo-sans and --ewo-mono. */
+@import '../vendor/ewo/tokens/tokens.css';
+@import '../vendor/ewo/tokens/projects.css';
+@import '../vendor/ewo/tokens/base.css';
+@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/martian-mono';
+
+:root {
+  --bg: light-dark(#f5f5f2, #131313);
+  --card: light-dark(#ffffff, #1b1b1a);
+  --ink: light-dark(#121212, #eeeeea);
+  --ink-2: light-dark(#53534f, #a9a9a3);
+  --rule: light-dark(#d4d4ce, #393936);
+  --sunk: light-dark(#ebebe6, #0d0d0d);
+  /* The highlighter, always with ink on it. */
+  --mark: light-dark(#ffe14a, #e9cb35);
+  --mark-ink: #121212;
+  --bad: light-dark(#b42318, #ff8a80);
+  --ok: light-dark(#1d6b3a, #7fd99a);
+  --sans: 'Schibsted Grotesk Variable', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'Martian Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+  --gutter: 16px;
+
+  /* Folio's elements (sheet, switch, toaster) in Fundus's colours. */
+  --ewo-bg: var(--bg);
+  --ewo-bg-raised: var(--card);
+  --ewo-panel: var(--bg);
+  --ewo-fg: var(--ink);
+  --ewo-fg-2: var(--ink-2);
+  --ewo-fg-3: var(--ink-2);
+  --ewo-line: var(--rule);
+  --ewo-line-strong: var(--ink);
+  --ewo-sans: var(--sans);
+  --ewo-mono: var(--mono);
+  --ewo-accent: var(--ink);
+  --ewo-accent-ink: var(--bg);
+  --ewo-r-xl: 14px;
+}
+
+@media (min-width: 760px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+/* Two quick taps on a control must not zoom the page: iOS Safari's double-tap zoom also made
+   sticky headers look stuck mid-page (learnings/ios-and-webkit.md, 2026-10-08). On the controls,
+   not <html>, which Safari ignores once it has an overflow. Zero specificity, so a component's own
+   touch-action still wins. */
+:where(button, a, label, summary, input, select, textarea, [role='button'], [role='radio']) {
+  touch-action: manipulation;
+}
+
+html {
+  overflow-x: clip;
+  background: var(--bg);
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+}
+
+h1,
+h2,
+h3,
+p,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* iOS zooms the page into any field under 16px: a floor for fields nobody sized. A tool that sizes
+   a field itself keeps it at 16px or more on touch screens (src/tools/README.md). */
+@media (hover: none) {
+  :where(input, select, textarea) {
+    font-size: max(16px, 1em);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--mark);
+  color: var(--mark-ink);
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Type ─────────────────────────────────────────────────────────────────────────── */
+
+.m {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
+  font-weight: 400;
+}
+
+.note {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.note.bad {
+  color: var(--bad);
+}
+
+.u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The highlighter: a stroke behind the text, a little crooked, like a real one. */
+.hl {
+  background: linear-gradient(177deg, transparent 10%, var(--mark) 10% 88%, transparent 88%);
+  color: var(--mark-ink);
+}
+
+/* ── The tool page: a spec sheet ───────────────────────────────────────────────────────── */
+
+.sheet {
+  display: grid;
+  gap: 18px;
+  padding: 18px var(--gutter) 56px;
+  align-content: start;
+  max-width: 1280px;
+  margin-inline: auto;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Two columns on a computer: the thing worked on (left) and its spec (right). */
+.cols {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+@media (min-width: 760px) {
+  .sheet {
+    gap: 26px;
+    padding-top: 26px;
+  }
+
+  .cols {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 26px 44px;
+    align-items: start;
+  }
+
+  .cols.even {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .cols > .wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
+/* A section heading inside a tool: bold caps over an ink rule. */
+.h {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.h em {
+  margin-left: auto;
+  font-style: normal;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+/* The spec: label left in mono caps, the control right, ruled. */
+.spec {
+  display: grid;
+  border-top: 1.5px solid var(--ink);
+}
+
+.spec > div {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  min-width: 0;
+}
+
+.spec dt {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.spec dd {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  min-width: 0;
+}
+
+/* Big figures: the result. */
+.big {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.big b {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.big s {
+  color: var(--ink-2);
+}
+
+.big em {
+  font-style: normal;
+  background: var(--mark);
+  color: var(--mark-ink);
+  padding: 0 5px;
+  font-weight: 700;
+}
+
+/* A plate: the picture or page being worked on. */
+.plate {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.plate > .frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--ink);
+  background: var(--sunk);
+  min-height: 160px;
+  overflow: hidden;
+}
+
+.plate > .frame img,
+.plate > .frame canvas {
+  max-width: 100%;
+  max-height: min(62vh, 640px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.plate figcaption {
+  font-size: 12px;
+  color: var(--ink-2);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.plate figcaption code {
+  font-family: var(--mono);
+  color: var(--ink);
+}
+
+/* ── Controls ─────────────────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border: 1.5px solid var(--ink);
+  background: var(--card);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.btn.small {
+  min-height: 30px;
+  padding: 3px 8px;
+  font-size: 13px;
+}
+
+.btn.ink {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:not(:disabled):hover {
+    background: var(--sunk);
+  }
+
+  .btn.ink:not(:disabled):hover {
+    background: var(--ink);
+    opacity: 0.88;
+  }
+}
+
+.link {
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Text fields and areas, ruled like the rest. */
+.field {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  background: var(--card);
+  /* 16px: under it the iPhone zooms into the field. */
+  font-size: 16px;
+  outline: none;
+}
+
+.field:focus {
+  box-shadow: 0 0 0 3px var(--mark);
+}
+
+textarea.field {
+  min-height: 180px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+select.field {
+  appearance: none;
+  padding-right: 30px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 55%,
+    calc(100% - 10px) 55%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.mono-out {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The ink Save bar: sticky at the thumb on a phone, in place on a computer. */
+.save {
+  position: sticky;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 2px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+}
+
+.save svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.save span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 760px) {
+  .save {
+    position: static;
+    box-shadow: none;
+  }
+}
+
+.foot {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  text-align: center;
+}
+
+/* A box people work in (an editor, a board): one height, the inside scrolls (learnings: panels
+   keep one height). */
+.work {
+  border: 1.5px solid var(--ink);
+  background: var(--card);
+  min-width: 0;
+}
+
+.error {
+  padding: 10px 12px;
+  border: 1.5px solid var(--bad);
+  color: var(--bad);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

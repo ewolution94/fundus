@@ -1,0 +1,86 @@
+name: CI
+
+# Runs on pull requests, and is the gate docker-publish.yml calls before it publishes
+# anything, so the checks guarding a PR and the checks guarding a deploy can't drift apart.
+# The end-to-end tests (tests/e2e, a real browser with real files) run locally before a push.
+on:
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          # Matches the Dockerfile.
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # The built page served by the real production server.
+      - name: Smoke test the production server
+        run: |
+          base=http://127.0.0.1:7499
+          PORT=7499 node server/server.mjs &
+          server=$!
+          for _ in $(seq 1 20); do curl -sf $base/healthz && break; sleep 0.5; done
+          curl -sf $base/ | grep -q '<title>Fundus</title>'
+          # Every tool has its own address with its own title; an unknown one is a 404 with the app.
+          node --input-type=module -e "
+            import { TOOLS } from './shared/catalog.mjs';
+            for (const t of TOOLS) {
+              const r = await fetch('$base/' + t.path);
+              const html = await r.text();
+              const title = t.name.en.replace(/&/g, '&amp;') + ' · Fundus';
+              if (r.status !== 200 || !html.includes('<title>' + title + '</title>')) throw new Error(t.path + ': ' + r.status);
+            }
+            console.log(TOOLS.length + ' tool pages');
+          "
+          test "$(curl -s -o /dev/null -w '%{http_code}' $base/no-such-tool)" = 404
+          curl -s $base/no-such-tool | grep -q '<div id="app">'
+          curl -sf -H 'accept-language: de-DE' $base/percent-and-vat | grep -q '<title>Prozent &amp; MwSt. · Fundus</title>'
+          # Nothing leaves the page: the CSP allows our own origin only.
+          curl -sI $base/ | grep -qi "content-security-policy: default-src 'self'"
+          curl -sI $base/ | grep -i "content-security-policy" | grep -q "connect-src 'self';"
+          curl -sI $base/ | grep -qi "cache-control: no-cache"
+          curl -sf $base/sitemap.xml | grep -q "/percent-and-vat</loc>"
+          curl -sf $base/robots.txt | grep -q 'Sitemap:'
+          curl -sf $base/manifest.webmanifest | grep -q '"name": "Fundus"'
+          curl -sf -o /dev/null $base/sw.js
+          curl -sf -o /dev/null $base/og.png
+          curl -sf -o /dev/null $base/icons/apple-touch-icon.png
+          curl -sf $base/pdfjs/index.json | grep -q 'standard_fonts/'
+          asset=$(curl -s $base/ | grep -o '/assets/[^"]*\.js' | head -1)
+          curl -sI "$base$asset" | grep -qi 'cache-control: public, max-age=31536000, immutable'
+          test "$(curl -s -o /dev/null -w '%{http_code}' $base/assets/missing.js)" = 404
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST $base/)" = 405
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST $base/share-target)" = 303
+          # The Census forwarder is wired in; without FUNDUS_CENSUS it answers locally.
+          test "$(curl -s -o /dev/null -w '%{http_code}' $base/_e.js)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST --data '{}' $base/_e)" = 204
+          kill $server
+          wait $server || true
