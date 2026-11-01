@@ -180,13 +180,18 @@
         <Seg label={t('set.passwordWords')} value={shared.passwordWords} options={[{ value: 'en', label: t('set.passwordWords.en') }, { value: 'de', label: t('set.passwordWords.de') }]} onchange={(v) => (shared.passwordWords = v)} />
         <p class="used m">{t('settings.usedBy', { list: usedBy('passwordWords') })}</p>
       </div>
+      <div class="set">
+        <div class="l"><b>{t('set.csv')}</b>{#if isDefault('csv')}<small>{t('set.csv.hint')}</small>{/if}</div>
+        <Seg label={t('set.csv')} value={shared.csv} options={[{ value: 'semicolon', label: t('set.csv.semicolon') }, { value: 'comma', label: t('set.csv.comma') }]} onchange={(v) => (shared.csv = v)} />
+        <p class="used m">{t('settings.usedBy', { list: usedBy('csv') })}</p>
+      </div>
     </section>
 
     <section>
       <h3 class="h">{t('settings.shelf')}</h3>
       <div class="set">
         <Check checked={shared.dev} label={t('set.dev')} hint={t('set.dev.hint')} onchange={(v) => (shared.dev = v)} />
-        <p class="used m">{t('settings.usedBy', { list: 'F-901–F-906' })}</p>
+        <p class="used m">{t('settings.usedBy', { list: 'F-901–F-911' })}</p>
       </div>
       <div class="set">
         <Check checked={shared.offline} disabled={offlineBusy} label={t('set.offline')} hint={t('set.offline.hint')} onchange={offline} />

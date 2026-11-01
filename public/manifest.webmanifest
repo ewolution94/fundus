@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Fundus",
   "short_name": "Fundus",
-  "description": "Everyday tools that run on your device: photos, PDFs, text, numbers and time.",
+  "description": "Everyday tools that run on your device: photos, PDFs, text, numbers, time and audio.",
   "lang": "en",
   "start_url": "/",
   "scope": "/",

@@ -33,7 +33,10 @@ export interface Shared {
   /** From this many files on, they're saved as one ZIP; 0 never. */
   zipFrom: number;
   passwordWords: 'en' | 'de';
-  /** The developer shelf, a sixth chip. */
+  /** What separates a CSV's columns when a tool writes one: semicolons for Excel where the decimal
+   *  mark is a comma (German Excel reads commas as decimals), commas elsewhere. */
+  csv: 'semicolon' | 'comma';
+  /** The developer shelf, its own chip. */
   dev: boolean;
   /** Fetch every tool's files once, so all of them work without a connection. */
   offline: boolean;
@@ -62,6 +65,7 @@ function deviceZone(): string {
 /** What each setting is when nobody changed it, from this device. */
 export function defaults(): Shared {
   const us = region() === 'US';
+  const decimal = ((changed as Partial<Shared>).decimal ?? (locale() === 'de' ? 'comma' : 'point')) as Shared['decimal'];
   return {
     photoFormat: 'same',
     quality: 85,
@@ -75,6 +79,7 @@ export function defaults(): Shared {
     names: 'suffix',
     zipFrom: 5,
     passwordWords: locale(),
+    csv: decimal === 'comma' ? 'semicolon' : 'comma',
     dev: false,
     offline: false,
   };

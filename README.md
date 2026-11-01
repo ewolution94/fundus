@@ -1,6 +1,6 @@
 # Fundus
 
-Everyday tools that run on your device: photos, PDFs, text, numbers and time. Nothing you put in
+Everyday tools that run on your device: photos, PDFs, text, numbers, time and audio. Nothing you put in
 leaves it. Live at [fundus.ewolution.cloud](https://fundus.ewolution.cloud).
 
 - **A parts index.** Twenty tools in six shelves, each with an article number whose hundreds are its

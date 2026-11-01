@@ -6,7 +6,7 @@
 // in it, so a tool's number never changes once it's out. Plain JavaScript, shared with the
 // zero-dependency server.
 
-/** @typedef {'photo' | 'pdf' | 'text' | 'scratch' | 'numbers' | 'dev'} Chip */
+/** @typedef {'photo' | 'pdf' | 'text' | 'scratch' | 'numbers' | 'audio' | 'dev'} Chip */
 /** @typedef {{ en: string, de: string }} Words */
 
 /** The chips, in the register's order, with each one's hundred. */
@@ -16,6 +16,7 @@ export const CHIPS = /** @type {const} */ ([
   { id: 'text', no: 300, name: { en: 'Text', de: 'Text' } },
   { id: 'scratch', no: 400, name: { en: 'From scratch', de: 'Ohne Vorlage' } },
   { id: 'numbers', no: 500, name: { en: 'Numbers & time', de: 'Zahlen & Zeit' } },
+  { id: 'audio', no: 600, name: { en: 'Audio', de: 'Audio' } },
   { id: 'dev', no: 900, name: { en: 'Developer', de: 'Entwickler' } },
 ]);
 
@@ -30,8 +31,8 @@ export const CHIPS = /** @type {const} */ ([
  * @property {Words} takes     what goes in, as the list's "takes → gives" shows it
  * @property {Words} gives
  * @property {string[]} words  more ways people ask for it, both languages, lower case
- * @property {string[]} accepts what it opens with already in: MIME patterns (image/*), `.ext`, or a
- *                              text shape (text, link, number, date, json, base64, timestamp)
+ * @property {string[]} accepts what it opens with already in: MIME patterns (image/*, audio/*), `.ext`,
+ *                              or a text shape (src/lib/shapes.ts: text, link, number, json, csv …)
  * @property {string[]} shared  the shared settings it reads (src/lib/settings.svelte.ts)
  */
 
@@ -41,11 +42,11 @@ export const TOOLS = [
   {
     id: 'convert', chip: 'photo', no: 101, path: 'convert-photos',
     name: { en: 'Convert photos', de: 'Fotos umwandeln' },
-    desc: { en: 'HEIC, PNG or WebP to JPG, PNG or WebP, many at once.', de: 'HEIC, PNG oder WebP zu JPG, PNG oder WebP, viele auf einmal.' },
-    takes: { en: 'HEIC · PNG · WebP · AVIF', de: 'HEIC · PNG · WebP · AVIF' },
+    desc: { en: 'HEIC, PNG, WebP or SVG to JPG, PNG or WebP, many at once.', de: 'HEIC, PNG, WebP oder SVG zu JPG, PNG oder WebP, viele auf einmal.' },
+    takes: { en: 'HEIC · PNG · WebP · AVIF · SVG', de: 'HEIC · PNG · WebP · AVIF · SVG' },
     gives: { en: 'JPG · PNG · WebP', de: 'JPG · PNG · WebP' },
-    words: ['umwandeln', 'konvertieren', 'convert', 'heic', 'heif', 'jpg', 'jpeg', 'png', 'webp', 'avif', 'format', 'iphone'],
-    accepts: ['image/*', '.heic', '.heif'],
+    words: ['umwandeln', 'konvertieren', 'convert', 'heic', 'heif', 'jpg', 'jpeg', 'png', 'webp', 'avif', 'format', 'iphone', 'svg', 'svg to png', 'vektor', 'vector'],
+    accepts: ['image/*', '.heic', '.heif', '.svg', 'image/svg+xml'],
     shared: ['photoFormat', 'quality', 'stripLocation', 'names', 'zipFrom'],
   },
   {
@@ -97,6 +98,16 @@ export const TOOLS = [
     words: ['scan', 'bilder zu pdf', 'images to pdf', 'jpg to pdf', 'jpg zu pdf', 'dokument', 'document'],
     accepts: ['image/*', '.heic', '.heif'],
     shared: ['pageSize', 'quality', 'names'],
+  },
+  {
+    id: 'icons', chip: 'photo', no: 107, path: 'make-icons',
+    name: { en: 'Make icons', de: 'Icons erstellen' },
+    desc: { en: 'A favicon and app icons from one picture.', de: 'Ein Favicon und App-Icons aus einem Bild.' },
+    takes: { en: 'SVG · PNG · any photo', de: 'SVG · PNG · jedes Foto' },
+    gives: { en: 'ICO · PNG · ZIP', de: 'ICO · PNG · ZIP' },
+    words: ['favicon', 'icon', 'icons', 'ico', 'app icon', 'apple touch icon', 'website', 'webseite', 'homepage', 'symbol', 'manifest', 'pwa'],
+    accepts: ['image/*', '.heic', '.heif', '.svg', 'image/svg+xml'],
+    shared: ['names'],
   },
   // 200 PDF
   {
@@ -160,6 +171,26 @@ export const TOOLS = [
     accepts: ['text'],
     shared: [],
   },
+  {
+    id: 'umlauts', chip: 'text', no: 304, path: 'fix-umlauts',
+    name: { en: 'Fix umlauts', de: 'Umlaute reparieren' },
+    desc: { en: 'Broken letters like “Ã¼” back to “ü”, or ä to ae.', de: 'Kaputte Zeichen wie „Ã¼“ zurück zu „ü“, oder ä zu ae.' },
+    takes: { en: 'Text · file', de: 'Text · Datei' },
+    gives: { en: 'Text', de: 'Text' },
+    words: ['umlaute', 'umlauts', 'encoding', 'kodierung', 'zeichensatz', 'zeichen', 'utf-8', 'utf8', 'windows-1252', 'latin-1', 'mojibake', 'sonderzeichen', 'kaputt', 'broken characters', 'ae oe ue', 'transliterate'],
+    accepts: ['mojibake', 'text/plain', '.txt'],
+    shared: ['names'],
+  },
+  {
+    id: 'csv', chip: 'text', no: 305, path: 'csv-and-excel',
+    name: { en: 'CSV & Excel', de: 'CSV & Excel' },
+    desc: { en: 'Open a bank export properly, save it for Excel.', de: 'Einen Bank-Export richtig öffnen, für Excel speichern.' },
+    takes: { en: 'CSV · TSV · XLSX', de: 'CSV · TSV · XLSX' },
+    gives: { en: 'XLSX · CSV', de: 'XLSX · CSV' },
+    words: ['csv', 'excel', 'xlsx', 'tabelle', 'spreadsheet', 'semikolon', 'semicolon', 'trennzeichen', 'separator', 'bank', 'export', 'kontoauszug', 'umsätze', 'tsv', 'numbers'],
+    accepts: ['csv', '.csv', '.tsv', '.xlsx', 'text/csv'],
+    shared: ['csv', 'decimal', 'names'],
+  },
   // 400 From scratch
   {
     id: 'qr', chip: 'scratch', no: 401, path: 'qr-code',
@@ -180,6 +211,16 @@ export const TOOLS = [
     words: ['passwort', 'kennwort', 'password', 'passphrase', 'pin', 'generator', 'zufall', 'random'],
     accepts: [],
     shared: ['passwordWords'],
+  },
+  {
+    id: 'colours', chip: 'scratch', no: 403, path: 'colours',
+    name: { en: 'Colours', de: 'Farben' },
+    desc: { en: 'A colour in every code, from a photo, and its contrast.', de: 'Eine Farbe in jedem Code, aus einem Foto, und ihr Kontrast.' },
+    takes: { en: 'A colour · a photo', de: 'Eine Farbe · ein Foto' },
+    gives: { en: 'HEX · RGB · HSL · OKLCH', de: 'HEX · RGB · HSL · OKLCH' },
+    words: ['farbe', 'farben', 'color', 'colour', 'colors', 'hex', 'rgb', 'hsl', 'oklch', 'kontrast', 'contrast', 'wcag', 'pipette', 'eyedropper', 'farbwähler', 'color picker', 'farbcode'],
+    accepts: ['colour', 'image/*', '.heic', '.heif'],
+    shared: [],
   },
   // 500 Numbers & time
   {
@@ -242,6 +283,27 @@ export const TOOLS = [
     accepts: [],
     shared: [],
   },
+  {
+    id: 'words', chip: 'numbers', no: 507, path: 'amount-in-words',
+    name: { en: 'Amount in words', de: 'Betrag in Worten' },
+    desc: { en: 'For a contract or a cheque; Roman numerals too.', de: 'Für einen Vertrag oder Scheck; auch römische Zahlen.' },
+    takes: { en: 'A number', de: 'Eine Zahl' },
+    gives: { en: 'Words · Roman', de: 'Worte · römisch' },
+    words: ['in worten', 'in words', 'zahl in worten', 'betrag', 'amount', 'kaufvertrag', 'vertrag', 'contract', 'scheck', 'cheque', 'check', 'römische zahlen', 'roman numerals', 'römisch', 'roman', 'ausschreiben', 'spell out'],
+    accepts: ['number', 'roman'],
+    shared: ['decimal'],
+  },
+  // 600 Audio
+  {
+    id: 'audio', chip: 'audio', no: 601, path: 'convert-audio',
+    name: { en: 'Convert audio', de: 'Audio umwandeln' },
+    desc: { en: 'Voice memos, M4A, WAV or a video’s sound to MP3.', de: 'Sprachmemos, M4A, WAV oder den Ton eines Videos zu MP3.' },
+    takes: { en: 'M4A · WAV · FLAC · OGG · video', de: 'M4A · WAV · FLAC · OGG · Video' },
+    gives: { en: 'MP3 · WAV', de: 'MP3 · WAV' },
+    words: ['audio', 'mp3', 'm4a', 'wav', 'flac', 'ogg', 'opus', 'sprachmemo', 'voice memo', 'sprachnachricht', 'ton', 'sound', 'musik', 'music', 'kürzen', 'trim', 'schneiden', 'video zu mp3', 'video to mp3', 'umwandeln', 'convert'],
+    accepts: ['audio/*', 'video/*'],
+    shared: ['names', 'zipFrom'],
+  },
   // 900 Developer (behind the switch in Settings)
   {
     id: 'json', chip: 'dev', no: 901, path: 'format-json',
@@ -301,6 +363,56 @@ export const TOOLS = [
     gives: { en: 'Hash', de: 'Hash' },
     words: ['hash', 'sha', 'sha256', 'sha-256', 'md5', 'checksum', 'prüfsumme'],
     accepts: ['text', '*'],
+    shared: [],
+  },
+  {
+    id: 'jwt', chip: 'dev', no: 907, path: 'jwt',
+    name: { en: 'JWTs', de: 'JWTs' },
+    desc: { en: 'Read a token and its times; check its signature.', de: 'Ein Token und seine Zeiten lesen; die Signatur prüfen.' },
+    takes: { en: 'A JWT', de: 'Ein JWT' },
+    gives: { en: 'Header · payload', de: 'Header · Payload' },
+    words: ['jwt', 'token', 'json web token', 'bearer', 'decode', 'dekodieren', 'signature', 'signatur', 'claims', 'exp'],
+    accepts: ['jwt'],
+    shared: ['homeZone'],
+  },
+  {
+    id: 'regex', chip: 'dev', no: 908, path: 'regex',
+    name: { en: 'Regex', de: 'Regex' },
+    desc: { en: 'Test a pattern: matches, groups, a replace.', de: 'Ein Muster testen: Treffer, Gruppen, Ersetzen.' },
+    takes: { en: 'A pattern · text', de: 'Ein Muster · Text' },
+    gives: { en: 'Matches', de: 'Treffer' },
+    words: ['regex', 'regexp', 'regular expression', 'regulärer ausdruck', 'pattern', 'muster', 'match', 'treffer', 'replace', 'ersetzen'],
+    accepts: [],
+    shared: [],
+  },
+  {
+    id: 'csvjson', chip: 'dev', no: 909, path: 'csv-to-json',
+    name: { en: 'CSV ↔ JSON', de: 'CSV ↔ JSON' },
+    desc: { en: 'Rows to objects, and back.', de: 'Zeilen zu Objekten, und zurück.' },
+    takes: { en: 'CSV · JSON', de: 'CSV · JSON' },
+    gives: { en: 'JSON · CSV', de: 'JSON · CSV' },
+    words: ['csv', 'json', 'csv to json', 'json to csv', 'umwandeln', 'convert', 'rows', 'zeilen', 'objects', 'array'],
+    accepts: ['csv', 'json', '.csv', '.tsv', 'text/csv', 'application/json', '.json'],
+    shared: ['csv', 'names'],
+  },
+  {
+    id: 'yaml', chip: 'dev', no: 910, path: 'yaml-to-json',
+    name: { en: 'YAML ↔ JSON', de: 'YAML ↔ JSON' },
+    desc: { en: 'Both ways, with the line of any error.', de: 'In beide Richtungen, mit der Zeile jedes Fehlers.' },
+    takes: { en: 'YAML · JSON', de: 'YAML · JSON' },
+    gives: { en: 'JSON · YAML', de: 'JSON · YAML' },
+    words: ['yaml', 'yml', 'json', 'yaml to json', 'json to yaml', 'umwandeln', 'convert', 'config', 'compose', 'kubernetes'],
+    accepts: ['yaml', 'json', '.yaml', '.yml', 'application/json', '.json'],
+    shared: ['names'],
+  },
+  {
+    id: 'bases', chip: 'dev', no: 911, path: 'number-bases',
+    name: { en: 'Number bases', de: 'Zahlensysteme' },
+    desc: { en: 'Binary, hex, octal, any base; two’s complement.', de: 'Binär, hex, oktal, jede Basis; Zweierkomplement.' },
+    takes: { en: 'A number', de: 'Eine Zahl' },
+    gives: { en: 'Every base', de: 'Jede Basis' },
+    words: ['binär', 'binary', 'hex', 'hexadecimal', 'hexadezimal', 'octal', 'oktal', 'base', 'basis', 'zahlensystem', 'bits', 'bytes', 'zweierkomplement', 'twos complement', 'radix'],
+    accepts: ['bases', 'number'],
     shared: [],
   },
 ];

@@ -1,6 +1,6 @@
 <!--
-  The libraries Fundus is built on and their licences. libheif is LGPL-3.0: it ships as its own file,
-  unchanged, and its source is linked here, so anyone can swap it for their own build.
+  The libraries Fundus is built on and their licences. libheif and lamejs are LGPL-3.0: each ships as
+  its own file, unchanged, and its source is linked here, so anyone can swap it for their own build.
 -->
 <script lang="ts">
   import { t } from '../lib/i18n.svelte.ts';
@@ -11,6 +11,10 @@
     { name: 'pdf.js', licence: 'Apache-2.0', url: 'https://github.com/mozilla/pdf.js', use: 'F-201, F-202, F-203: reading and drawing PDFs' },
     { name: 'pdf-lib', licence: 'MIT', url: 'https://github.com/Hopding/pdf-lib', use: 'F-106, F-201, F-202: writing PDFs' },
     { name: 'libheif (libheif-js)', licence: 'LGPL-3.0', url: 'https://github.com/catdad-experiments/libheif-js', use: 'HEIC photos in browsers that can’t open them (not Safari). Source of libheif: github.com/strukturag/libheif' },
+    { name: 'lamejs (@breezystack/lamejs)', licence: 'LGPL-3.0', url: 'https://github.com/breezystack/lamejs', use: 'F-601: writing MP3s. A port of LAME: lame.sourceforge.io' },
+    { name: 'read-excel-file', licence: 'MIT', url: 'https://gitlab.com/catamphetamine/read-excel-file', use: 'F-305: reading Excel files' },
+    { name: 'write-excel-file', licence: 'MIT', url: 'https://gitlab.com/catamphetamine/write-excel-file', use: 'F-305: writing Excel files' },
+    { name: 'yaml', licence: 'ISC', url: 'https://github.com/eemeli/yaml', use: 'F-910: reading and writing YAML' },
     { name: 'fflate', licence: 'MIT', url: 'https://github.com/101arrowz/fflate', use: 'ZIP files' },
     { name: 'uqr', licence: 'MIT', url: 'https://github.com/unjs/uqr', use: 'F-401: drawing QR codes' },
     { name: 'jsQR', licence: 'Apache-2.0', url: 'https://github.com/cozmo/jsQR', use: 'F-401: reading QR codes' },

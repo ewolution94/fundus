@@ -5,8 +5,8 @@
 import { TOOLS, CHIPS, articleNo, toolByPath } from '../shared/catalog.mjs';
 
 const SITE = {
-  en: { title: 'Fundus', desc: 'Everyday tools that run on your device: photos, PDFs, text, numbers and time. Nothing you put in leaves it.' },
-  de: { title: 'Fundus', desc: 'Werkzeuge für jeden Tag, die auf deinem Gerät laufen: Fotos, PDFs, Text, Zahlen und Zeit. Nichts, was du hineingibst, verlässt es.' },
+  en: { title: 'Fundus', desc: 'Everyday tools that run on your device: photos, PDFs, text, numbers, time and audio. Nothing you put in leaves it.' },
+  de: { title: 'Fundus', desc: 'Werkzeuge für jeden Tag, die auf deinem Gerät laufen: Fotos, PDFs, Text, Zahlen, Zeit und Audio. Nichts, was du hineingibst, verlässt es.' },
 };
 const LICENCES = { en: 'Licences', de: 'Lizenzen' };
 const LOCAL = { en: 'Runs on your device.', de: 'Läuft auf deinem Gerät.' };

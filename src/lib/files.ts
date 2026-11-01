@@ -97,6 +97,17 @@ export function formatBytes(n: number, mark: DecimalMark): string {
 }
 
 /** A file name without its extension. */
+const AUDIO_EXT = /\.(mp3|m4a|aac|wav|wave|flac|ogg|oga|opus|aif|aiff|caf|weba|amr)$/i;
+const VIDEO_EXT = /\.(mp4|m4v|mov|webm|mkv|3gp)$/i;
+const SHEET_TYPES = ['text/csv', 'text/tab-separated-values', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+
+/** Sound, a video, a vector picture, a table: by the file's type, else its ending (a file shared from
+ *  another app can come without a type). */
+export const isAudio = (f: File) => f.type.startsWith('audio/') || (!f.type.startsWith('video/') && AUDIO_EXT.test(f.name));
+export const isVideo = (f: File) => f.type.startsWith('video/') || VIDEO_EXT.test(f.name);
+export const isSvg = (f: File) => f.type === 'image/svg+xml' || /\.svg$/i.test(f.name);
+export const isSheet = (f: File) => SHEET_TYPES.includes(f.type) || /\.(csv|tsv|xlsx)$/i.test(f.name);
+
 export const stem = (name: string) => name.replace(/\.[^./\\]+$/, '') || 'file';
 
 /**
