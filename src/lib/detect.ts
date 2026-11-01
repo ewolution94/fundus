@@ -145,7 +145,8 @@ export async function accepts(t: Tool, item: Item): Promise<boolean> {
     if (a === 'audio/*') return isAudio(item.file);
     if (a === 'video/*') return isVideo(item.file);
     if (a.startsWith('.')) return item.file.name.toLowerCase().endsWith(a);
-    if (a === 'text') return item.file.type.startsWith('text/');
+    // A table is text too, but its rows go to the table tools, not Count words.
+    if (a === 'text') return item.file.type.startsWith('text/') && !isSheet(item.file);
     return item.file.type === a;
   });
 }

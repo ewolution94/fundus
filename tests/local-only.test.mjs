@@ -26,7 +26,9 @@ const NETWORK = [
   /\bRTCPeerConnection\b/,
   /\bimport\s*\(\s*['"`]https?:/,
   /\bfrom\s+['"]https?:/,
-  /\bimportScripts\s*\(/,
+  // A worker may load a file of our own (LAME ships unchanged, as its licence asks); script-src 'self'
+  // keeps it to this origin.
+  /\bimportScripts\s*\(\s*['"`]https?:/,
   /new\s+Worker\s*\(\s*['"`]https?:/,
 ];
 

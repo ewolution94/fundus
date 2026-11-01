@@ -2,7 +2,7 @@
 <script lang="ts">
   import { X, FileText } from '@lucide/svelte';
   import { t } from '../../lib/i18n.svelte.ts';
-  import type { Snippet } from 'svelte';
+  import type { Component, Snippet } from 'svelte';
 
   interface Props {
     name: string;
@@ -10,17 +10,19 @@
     meta?: string;
     /** An object URL of a small picture of it. */
     thumb?: string | null;
+    /** The figure when there's no picture: a document unless the tool says otherwise (a sound). */
+    icon?: Component<{ 'aria-hidden'?: 'true' }>;
     onremove?: () => void;
     /** Extra controls at the end (rotate, move). */
     actions?: Snippet;
   }
 
-  let { name, meta = '', thumb = null, onremove, actions }: Props = $props();
+  let { name, meta = '', thumb = null, icon: Icon = FileText, onremove, actions }: Props = $props();
 </script>
 
 <div class="file">
   <div class="thumb">
-    {#if thumb}<img src={thumb} alt="" />{:else}<FileText aria-hidden="true" />{/if}
+    {#if thumb}<img src={thumb} alt="" />{:else}<Icon aria-hidden="true" />{/if}
   </div>
   <div class="text">
     <b>{name}</b>

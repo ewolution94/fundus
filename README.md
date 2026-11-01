@@ -3,16 +3,17 @@
 Everyday tools that run on your device: photos, PDFs, text, numbers, time and audio. Nothing you put in
 leaves it. Live at [fundus.ewolution.cloud](https://fundus.ewolution.cloud).
 
-- **A parts index.** Twenty tools in six shelves, each with an article number whose hundreds are its
-  shelf (F-102 Shrink a photo, F-502 Percent & VAT), what it takes and what it gives. A developer
-  shelf of six more (900) waits behind a switch in Settings.
-- **Drop anything on the home.** A photo, a PDF, a text, a link or a number, dropped, pasted or
-  picked: the tools that take it come first, each with its reason ("It's a HEIC: make it a JPG",
+- **A parts index.** Twenty-six tools in six shelves, each with an article number whose hundreds are
+  its shelf (F-102 Shrink a photo, F-502 Percent & VAT), what it takes and what it gives. A developer
+  shelf of eleven more (900) waits behind a switch in Settings.
+- **Drop anything on the home.** A photo, a PDF, a sound, a table, a text, a link or a number,
+  dropped, pasted or picked: the tools that take it come first, each with its reason ("It's a HEIC: make it a JPG",
   "It knows where it was taken").
 - **One result into the next.** A tool's result goes on into the next tool with the file already
   in: shrink a photo, then blur a part of it, then put it in a PDF.
 - **Settings that hold across tools.** The photo format, quality, removing the place when saving,
-  the size target, paper size, units, the decimal mark, the week, the home time zone, file names,
+  the size target, paper size, units, the decimal mark, the CSV separator, the week, the home time
+  zone, file names,
   when several files become one ZIP. Inside a tool such a choice says "for every photo tool" and
   its change comes with an undo.
 - **Nothing leaves the device.** No uploads, no accounts. The CSP allows the page to talk to its
@@ -27,12 +28,13 @@ leaves it. Live at [fundus.ewolution.cloud](https://fundus.ewolution.cloud).
 
 | No. | Tool | Shelf |
 |---|---|---|
-| F-101–106 | Convert photos, Shrink a photo, Resize & crop, Remove location, Blur parts, Photos to PDF | Photo |
+| F-101–107 | Convert photos, Shrink a photo, Resize & crop, Remove location, Blur parts, Photos to PDF, Make icons | Photo |
 | F-201–203 | Arrange a PDF, Sign a PDF, PDF to photos | PDF |
-| F-301–303 | Count words, Clean up text, Compare texts | Text |
-| F-401–402 | Make a QR code, Make a password | From scratch |
-| F-501–506 | Dates & weeks, Percent & VAT, Convert units, Time zones, Split a bill, Timers | Numbers & time |
-| F-901–906 | Format JSON, Base64, Encode URLs, Timestamps, UUIDs, Hashes | Developer (off by default) |
+| F-301–305 | Count words, Clean up text, Compare texts, Fix umlauts, CSV & Excel | Text |
+| F-401–403 | Make a QR code, Make a password, Colours | From scratch |
+| F-501–507 | Dates & weeks, Percent & VAT, Convert units, Time zones, Split a bill, Timers, Amount in words | Numbers & time |
+| F-601 | Convert audio | Audio |
+| F-901–911 | Format JSON, Base64, Encode URLs, Timestamps, UUIDs, Hashes, JWTs, Regex, CSV ↔ JSON, YAML ↔ JSON, Number bases | Developer (off by default) |
 
 The catalog (`shared/catalog.mjs`) holds each tool's number, address, names, synonyms, what it takes
 and gives, and the shared settings it reads; the home, search, detection, chaining, the page heads
@@ -48,6 +50,18 @@ contract for writing one.
   EXIF back.
 - **PDFs:** pdf.js reads and draws them (its fonts and character maps come from our own `/pdfjs/`),
   pdf-lib writes them, copying pages rather than redrawing them.
+- **SVG** goes onto a canvas as a picture (`src/lib/svg.ts`): its size is read from the file and
+  set before it loads, so it draws sharp at any size; one with `<foreignObject>` is refused up front
+  (it would taint the canvas), and nothing it links to is loaded. Make icons draws one picture into
+  every size a website and a home screen ask for, with the manifest, in one ZIP.
+- **Sound:** the browser's own Web Audio decodes it (MP3, M4A, WAV, FLAC, Ogg, and a video's sound);
+  WAV is written by hand, MP3 by LAME in a worker, shipped as its own unchanged file because its
+  licence (LGPL) asks for that. A decoded minute of stereo is about 21 MB, so a file may run 20
+  minutes on a phone and 60 on a computer.
+- **Tables:** CSV is read and written by our own parser (`src/lib/csv.ts`): quotes, the separator
+  and decimal mark found, UTF-16 and German Excel's Windows-1252. Each column gets a type, and one
+  Excel would wreck (the postcode 01067, an IBAN, 16 digits) stays Text. `.xlsx` is read and written
+  by read-excel-file and write-excel-file, in the page.
 - **Saving:** on a phone, Save opens the share sheet (Save Image, Save to Files), so results are
   computed before the tap; on a computer it downloads. From five files on they go as one ZIP.
 - **Offline:** the service worker keeps the shell and every file a tool has loaded; "Everything

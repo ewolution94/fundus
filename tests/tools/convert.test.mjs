@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { targetFor, keepsBytes, convertedName, uniqueNames, sizeChange, kindLabel } from '../../src/tools/convert/convert.ts';
+import { targetFor, keepsBytes, convertedName, uniqueNames, sizeChange, kindLabel, svgWant, MAX_WIDTH } from '../../src/tools/convert/convert.ts';
 
 test('"same" keeps PNG and WebP, turns HEIC, AVIF, GIF and JPG into JPG', () => {
   assert.equal(targetFor('png', 'same', true), 'image/png');
@@ -55,4 +55,22 @@ test('kinds as people say them', () => {
   assert.equal(kindLabel('jpeg'), 'JPG');
   assert.equal(kindLabel('webp'), 'WebP');
   assert.equal(kindLabel('heic'), 'HEIC');
+});
+
+test('an SVG becomes a PNG under "same", else what was chosen; never kept as it is', () => {
+  assert.equal(targetFor('svg', 'same', true), 'image/png');
+  assert.equal(targetFor('svg', 'jpg', true), 'image/jpeg');
+  assert.equal(targetFor('svg', 'webp', true), 'image/webp');
+  assert.equal(targetFor('svg', 'webp', false), 'image/jpeg');
+  assert.equal(keepsBytes('svg', 'image/png'), false);
+  assert.equal(kindLabel('svg'), 'SVG');
+  assert.equal(convertedName('logo.svg', 'png', 'suffix'), 'logo.png');
+});
+
+test('the Size row: a scale, or a whole width within the limit', () => {
+  assert.deepEqual(svgWant('1', NaN), { scale: 1 });
+  assert.deepEqual(svgWant('4', 12), { scale: 4 });
+  assert.deepEqual(svgWant('width', 1000), { width: 1000 });
+  assert.deepEqual(svgWant('width', MAX_WIDTH), { width: MAX_WIDTH });
+  for (const bad of [NaN, 0, -5, 12.5, MAX_WIDTH + 1]) assert.equal(svgWant('width', bad), null, String(bad));
 });

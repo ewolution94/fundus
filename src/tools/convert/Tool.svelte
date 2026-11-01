@@ -1,8 +1,9 @@
 <!--
-  F-101 Convert photos: HEIC, PNG, WebP, AVIF or JPG in; JPG, PNG or WebP out, many at once. The
+  F-101 Convert photos: HEIC, PNG, WebP, AVIF, SVG or JPG in; JPG, PNG or WebP out, many at once. The
   format is the shared Photo format setting, the JPG and WebP quality the shared Photo quality. A
   photo that already is the target type keeps its bytes (convert.ts); everything else is drawn and
-  encoded once, with the metadata as the location setting says.
+  encoded once, with the metadata as the location setting says. An SVG is drawn at the Size row's
+  scale or width (src/lib/svg.ts), sharp at that size; one with HTML inside is refused up front.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
@@ -10,6 +11,7 @@
   import FileRow from '../../components/kit/FileRow.svelte';
   import Seg from '../../components/kit/Seg.svelte';
   import Check from '../../components/kit/Check.svelte';
+  import NumIn from '../../components/kit/NumIn.svelte';
   import SharedNote from '../../components/kit/SharedNote.svelte';
   import SaveButton from '../../components/kit/SaveButton.svelte';
   import NextTools from '../../components/kit/NextTools.svelte';
@@ -18,23 +20,25 @@
   import { files as filesOf, type Item } from '../../lib/inbox.svelte.ts';
   import { perFile } from '../../lib/jobs.svelte.ts';
   import { decode, draw, encode, canEncode, preview, isPhoto, extOf, fit } from '../../lib/images.ts';
-  import { formatBytes, kindOf, type Kind } from '../../lib/files.ts';
-  import { formatNumber } from '../../lib/numbers.ts';
+  import { formatBytes, kindOf, isSvg } from '../../lib/files.ts';
+  import { formatNumber, parseNumber } from '../../lib/numbers.ts';
+  import { remember } from '../../lib/memory.svelte.ts';
+  import { svgSize, isSvgText, holdsHtml, needsFonts, scaleTo, drawSvg, type Size } from '../../lib/svg.ts';
   import { strip } from '../../lib/exif.ts';
   import type { Output } from '../../lib/save.ts';
   import type { Tool } from '../../lib/catalog.ts';
-  import { targetFor, keepsBytes, convertedName, uniqueNames, sizeChange, kindLabel, QUALITIES } from './convert.ts';
+  import { targetFor, keepsBytes, convertedName, uniqueNames, sizeChange, kindLabel, svgWant, QUALITIES, SVG_SCALES, MAX_WIDTH, type Source, type SvgScale } from './convert.ts';
 
   let { tool, items }: { tool: Tool; items: Item[] } = $props();
 
   const w = words({
     en: {
       drop: 'Drop photos here, or choose them',
-      dropHint: 'HEIC, PNG, WebP, AVIF, JPG. Many at once.',
+      dropHint: 'HEIC, PNG, WebP, AVIF, SVG, JPG. Many at once.',
       add: 'Add photos',
       format: 'Format',
       same: 'Same',
-      sameHint: 'Each keeps its format; HEIC and AVIF become JPG.',
+      sameHint: 'Each keeps its format; HEIC and AVIF become JPG, SVG becomes PNG.',
       quality: 'Quality',
       small: 'Small',
       good: 'Good',
@@ -58,14 +62,23 @@
       reading: 'Reading the photos…',
       failed: 'Couldn’t convert {name}.',
       count: '{n} photos',
+      size: 'Size',
+      width: 'Width',
+      widthLabel: 'Width in pixels',
+      badWidth: 'Type a width from 1 to {max} px.',
+      svgOne: '{name}: {from} → {to} px',
+      svgMany: 'For every SVG in the list. {name}: {from} → {to} px',
+      capped: 'Kept at {size} px: browsers draw no bigger.',
+      html: '{name}: this SVG holds HTML inside, which browsers won’t turn into pixels.',
+      fonts: 'Text in {name} uses this device’s fonts: fonts it links to aren’t loaded.',
     },
     de: {
       drop: 'Fotos hier ablegen oder auswählen',
-      dropHint: 'HEIC, PNG, WebP, AVIF, JPG. Viele auf einmal.',
+      dropHint: 'HEIC, PNG, WebP, AVIF, SVG, JPG. Viele auf einmal.',
       add: 'Fotos dazu',
       format: 'Format',
       same: 'Gleich',
-      sameHint: 'Jedes behält sein Format; HEIC und AVIF werden JPG.',
+      sameHint: 'Jedes behält sein Format; HEIC und AVIF werden JPG, SVG wird PNG.',
       quality: 'Qualität',
       small: 'Klein',
       good: 'Gut',
@@ -89,15 +102,26 @@
       reading: 'Die Fotos werden gelesen…',
       failed: '{name} ließ sich nicht umwandeln.',
       count: '{n} Fotos',
+      size: 'Größe',
+      width: 'Breite',
+      widthLabel: 'Breite in Pixeln',
+      badWidth: 'Gib eine Breite von 1 bis {max} px ein.',
+      svgOne: '{name}: {from} → {to} px',
+      svgMany: 'Für jedes SVG in der Liste. {name}: {from} → {to} px',
+      capped: 'Bleibt bei {size} px: größer zeichnen Browser nicht.',
+      html: '{name}: Dieses SVG enthält HTML, das Browser nicht in Pixel umwandeln.',
+      fonts: 'Text in {name} nutzt die Schriften dieses Geräts: verlinkte Schriften werden nicht geladen.',
     },
   });
 
   interface Entry {
     file: File;
-    kind: Kind;
+    kind: Source;
     thumb: string;
     width: number;
     height: number;
+    /** An SVG's text, its own size (unrounded) and whether its text needs the device's fonts. */
+    svg: { text: string; size: Size; fonts: boolean } | null;
   }
 
   interface Converted {
@@ -105,7 +129,12 @@
     /** The name before repeats are numbered. */
     name: string;
     kept: boolean;
+    /** The pixels an SVG was drawn at. */
+    drawn?: { width: number; height: number };
   }
+
+  // The SVG's size, kept for next time (a choice, not content).
+  const o = remember('convert', { svgScale: '1' as SvgScale, svgWidth: '1000' });
 
   let entries = $state<Entry[]>([]);
   let adding = $state(0);
@@ -117,12 +146,33 @@
   const qualityName = (q: number) => (q === 70 ? w('small') : q === 95 ? w('best') : w('good'));
   const formatWord = (f: PhotoFormat) => (f === 'jpg' ? 'JPG' : f === 'png' ? 'PNG' : f === 'webp' ? 'WebP' : w('same'));
 
+  /** An SVG's text, or null for anything else (a file can come without a type or an ending). */
+  async function svgText(file: File): Promise<string | null> {
+    if (!isSvg(file) && ((await kindOf(file)) !== 'other' || file.size > 20e6)) return null;
+    const text = await file.text();
+    return isSvgText(text) ? text : null;
+  }
+
   async function add(list: File[]) {
     errors = [];
     adding++;
     const fresh: Entry[] = [];
     for (const file of list) {
       try {
+        const text = await svgText(file);
+        if (text !== null) {
+          if (holdsHtml(text)) {
+            errors = [...errors, w('html', { name: file.name })];
+            continue;
+          }
+          const size = svgSize(text);
+          // A vector: its picture is drawn for the box, larger than it is if need be.
+          const k = Math.min(240 / size.width, 240 / size.height);
+          const small = await drawSvg(text, size.width * k, size.height * k, '#fff');
+          const thumb = preview((await encode(small, 'image/jpeg', 80, null, true)).blob).url;
+          fresh.push({ file, kind: 'svg', thumb, width: Math.round(size.width), height: Math.round(size.height), svg: { text, size, fonts: needsFonts(text) } });
+          continue;
+        }
         if (!(await isPhoto(file))) throw new Error();
         const kind = await kindOf(file);
         const d = await decode(file);
@@ -130,7 +180,7 @@
         const small = draw(d.bitmap, size.width, size.height, 'image/jpeg');
         d.bitmap.close();
         const thumb = preview((await encode(small, 'image/jpeg', 70, null, true)).blob).url;
-        fresh.push({ file, kind, thumb, width: d.width, height: d.height });
+        fresh.push({ file, kind, thumb, width: d.width, height: d.height, svg: null });
       } catch {
         errors = [...errors, w('notPhoto', { name: file.name })];
       }
@@ -142,42 +192,72 @@
   function remove(i: number) {
     URL.revokeObjectURL(entries[i].thumb);
     jobs.forget(entries[i].file);
+    made.delete(entries[i].file);
     entries = entries.filter((_, k) => k !== i);
   }
 
   const given = untrack(() => filesOf(items));
   if (given.length) void add(given);
 
-  const kindOfFile = (file: File) => entries.find((e) => e.file === file)?.kind ?? 'other';
+  const entryOf = (file: File) => entries.find((e) => e.file === file);
 
-  const key = () => `${shared.photoFormat}|${shared.quality}|${shared.stripLocation}|${shared.names}|${webpOk}`;
+  // The Size row: what it asks of every SVG, or null for a width that isn't one.
+  const want = $derived(svgWant(o.svgScale, parseNumber(o.svgWidth)));
+  const svgs = $derived(entries.filter((e) => e.svg));
+
+  const photoKey = () => `${shared.photoFormat}|${shared.quality}|${shared.stripLocation}|${shared.names}|${webpOk}`;
+  const svgKey = () => (want ? ('width' in want ? `w${want.width}` : `x${want.scale}`) : 'none');
+  // The SVG's size only counts while there's an SVG in.
+  const key = () => `${photoKey()}|${svgs.length ? svgKey() : ''}`;
+
+  // Each file's own result by the options it depends on: a new SVG size leaves the photos alone.
+  const made = new Map<File, { key: string; value: Converted }>();
 
   const jobs = perFile<Converted>(
     () => entries.map((e) => e.file),
     key,
     async (file) => {
-      const setting = shared.photoFormat;
-      const quality = shared.quality;
-      const stripIt = shared.stripLocation;
-      const names = shared.names;
-      const kind = untrack(() => kindOfFile(file));
-      const type = targetFor(kind, setting, webpOk);
-      if (keepsBytes(kind, type)) {
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        const stripped = stripIt ? strip(bytes, 'everything') : null;
-        const blob = stripped ? new Blob([stripped as BlobPart], { type }) : new Blob([bytes as BlobPart], { type });
-        return { blob, name: convertedName(file.name, extOf(type), names), kept: true };
-      }
-      const d = await decode(file);
-      try {
-        const canvas = draw(d.bitmap, d.width, d.height, type);
-        const out = await encode(canvas, type, quality, file, stripIt);
-        return { blob: out.blob, name: convertedName(file.name, extOf(out.type), names), kept: false };
-      } finally {
-        d.bitmap.close();
-      }
+      const entry = untrack(() => entryOf(file));
+      const own = entry?.svg ? `${photoKey()}|${svgKey()}` : photoKey();
+      const before = made.get(file);
+      if (before?.key === own) return before.value;
+      const value = await convert(file, entry);
+      made.set(file, { key: own, value });
+      return value;
     },
   );
+
+  async function convert(file: File, entry: Entry | undefined): Promise<Converted> {
+    const setting = shared.photoFormat;
+    const quality = shared.quality;
+    const stripIt = shared.stripLocation;
+    const names = shared.names;
+    const kind = entry?.kind ?? 'other';
+    const type = targetFor(kind, setting, webpOk);
+    if (entry?.svg) {
+      const asked = untrack(() => want);
+      if (!asked) throw new Error('No width');
+      const to = scaleTo(entry.svg.size, asked);
+      // A PNG or WebP keeps the transparency; a JPG gets white under it.
+      const canvas = await drawSvg(entry.svg.text, to.width, to.height, type === 'image/jpeg' ? '#fff' : null);
+      const out = await encode(canvas, type, quality, null, true);
+      return { blob: out.blob, name: convertedName(file.name, extOf(out.type), names), kept: false, drawn: { width: to.width, height: to.height } };
+    }
+    if (keepsBytes(kind, type)) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const stripped = stripIt ? strip(bytes, 'everything') : null;
+      const blob = stripped ? new Blob([stripped as BlobPart], { type }) : new Blob([bytes as BlobPart], { type });
+      return { blob, name: convertedName(file.name, extOf(type), names), kept: true };
+    }
+    const d = await decode(file);
+    try {
+      const canvas = draw(d.bitmap, d.width, d.height, type);
+      const out = await encode(canvas, type, quality, file, stripIt);
+      return { blob: out.blob, name: convertedName(file.name, extOf(out.type), names), kept: false };
+    } finally {
+      d.bitmap.close();
+    }
+  }
 
   const outputs = $derived.by((): Output[] | null => {
     if (adding) return null;
@@ -207,12 +287,18 @@
   function rowMeta(e: Entry): string {
     const done = jobs.get(e.file);
     const before = `${formatBytes(e.file.size, mark)} ${kindLabel(e.kind)}`;
-    if (done?.value) return `${before} → ${formatBytes(done.value.blob.size, mark)} ${extOf(done.value.blob.type).toUpperCase().replace('WEBP', 'WebP')}`;
+    const drawn = done?.value?.drawn ? ` · ${done.value.drawn.width} × ${done.value.drawn.height}` : '';
+    if (done?.value) return `${before} → ${formatBytes(done.value.blob.size, mark)} ${extOf(done.value.blob.type).toUpperCase().replace('WEBP', 'WebP')}${drawn}`;
     if (done?.error) return w('failed', { name: e.file.name });
     return `${before} · ${e.width} × ${e.height}`;
   }
 
   const percent = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : '±'}${formatNumber(Math.abs(n), mark, { max: 0 })} %`;
+
+  // What the first SVG becomes, for the Size row.
+  const firstSvg = $derived(svgs[0]);
+  const firstTo = $derived(firstSvg?.svg && want ? scaleTo(firstSvg.svg.size, want) : null);
+  const capped = $derived(want ? svgs.map((e) => scaleTo(e.svg!.size, want)).find((t) => t.capped) : undefined);
 </script>
 
 <div class="cols">
@@ -233,9 +319,9 @@
       {#each entries as e, i (e.file)}
         <FileRow name={e.file.name} thumb={e.thumb} meta={rowMeta(e)} onremove={() => remove(i)} />
       {/each}
-      <DropWell accept="image/*,.heic,.heif" multiple compact title={w('add')} onfiles={add} />
+      <DropWell accept="image/*,.heic,.heif,.svg" multiple compact title={w('add')} onfiles={add} />
     {:else}
-      <DropWell accept="image/*,.heic,.heif" multiple title={w('drop')} hint={w('dropHint')} onfiles={add} />
+      <DropWell accept="image/*,.heic,.heif,.svg" multiple title={w('drop')} hint={w('dropHint')} onfiles={add} />
     {/if}
     {#if adding}<p class="note" aria-live="polite">{w('reading')}</p>{/if}
     {#each errors as err (err)}<p class="note bad" role="alert">{err}</p>{/each}
@@ -262,6 +348,28 @@
           <SharedNote chip="photo" />
         </dd>
       </div>
+      {#if svgs.length}
+        <div>
+          <dt>{w('size')}</dt>
+          <dd>
+            <Seg
+              label={w('size')}
+              value={o.svgScale}
+              options={SVG_SCALES.map((s) => ({ value: s, label: s === 'width' ? w('width') : `${s}×` }))}
+              onchange={(v) => (o.svgScale = v)}
+            />
+            {#if o.svgScale === 'width'}
+              <NumIn label={w('widthLabel')} value={o.svgWidth} size="mid" width="150px" unit="px" inputmode="numeric" oninput={(v) => (o.svgWidth = v)} />
+              {#if !want}<span class="note bad">{w('badWidth', { max: formatNumber(MAX_WIDTH, mark) })}</span>{/if}
+            {/if}
+            {#if firstSvg && firstTo}
+              <span class="note">{w(svgs.length > 1 ? 'svgMany' : 'svgOne', { name: firstSvg.file.name, from: `${firstSvg.width} × ${firstSvg.height}`, to: `${firstTo.width} × ${firstTo.height}` })}</span>
+            {/if}
+            {#if capped}<span class="note">{w('capped', { size: `${capped.width} × ${capped.height}` })}</span>{/if}
+            {#each svgs.filter((e) => e.svg?.fonts) as e (e.file)}<span class="note">{w('fonts', { name: e.file.name })}</span>{/each}
+          </dd>
+        </div>
+      {/if}
       <div>
         <dt>{w('quality')}</dt>
         <dd>
@@ -290,14 +398,19 @@
               {@const n = sizeChange(totals.before, totals.after)}
               <div class="big">
                 <b>{formatBytes(totals.after, mark)}</b>
-                {#if formatBytes(totals.before, mark) !== formatBytes(totals.after, mark)}<s>{formatBytes(totals.before, mark)}</s>{/if}
-                {#if n < 0}<em>{percent(n)}</em>{:else if n > 0}<span class="up">{percent(n)}</span>{/if}
+                <!-- An SVG's bytes say nothing about its pixels: no before and after with one in. -->
+                {#if !svgs.length}
+                  {#if formatBytes(totals.before, mark) !== formatBytes(totals.after, mark)}<s>{formatBytes(totals.before, mark)}</s>{/if}
+                  {#if n < 0}<em>{percent(n)}</em>{:else if n > 0}<span class="up">{percent(n)}</span>{/if}
+                {/if}
               </div>
               {#if entries.length === 1}
                 {#if totals.kept}<span class="note">{shared.stripLocation ? w('keptStripped', { kind: kindLabel(entries[0].kind) }) : w('kept', { kind: kindLabel(entries[0].kind) })}</span>{/if}
               {:else}
                 <span class="note">{totals.done ? w('converted', { n: totals.done }) : ''} {totals.kept ? w('someKept', { n: totals.kept }) : ''}</span>
               {/if}
+            {:else if svgs.length && !want}
+              <span class="note">{w('badWidth', { max: formatNumber(MAX_WIDTH, mark) })}</span>
             {:else if entries.some((e) => jobs.get(e.file)?.error)}
               <span class="note bad" role="alert">{w('failed', { name: entries.find((e) => jobs.get(e.file)?.error)!.file.name })}</span>
             {:else}
