@@ -1,17 +1,18 @@
 <!--
   Settings, the family's way (Folio's ewo-sheet, General first with ewo-settings-basics), then the
-  shared settings every tool reads, each with the tools that use it ("Used by F-101, F-102"). A
-  sheet on a phone, a drawer at the right on a computer (look B, round 2).
+  shared settings every tool reads, each with the tools that use it ("Used by F-101, F-102", each
+  number naming its tool). A sheet on a phone, a drawer at the right on a computer (look B, round 2).
 -->
 <script lang="ts">
   import Seg from './kit/Seg.svelte';
   import Check from './kit/Check.svelte';
+  import UsedBy from './kit/UsedBy.svelte';
   import { ui, type Language } from '../lib/prefs.svelte.ts';
   import { theme, type ThemePreference } from '../lib/theme.svelte.ts';
   import { prefs } from '../lib/prefs.svelte.ts';
   import { setLanguage, t } from '../lib/i18n.svelte.ts';
   import { shared, isDefault, type SharedKey, type PhotoFormat } from '../lib/settings.svelte.ts';
-  import { TOOLS, articleNo } from '../lib/catalog.ts';
+  import { TOOLS } from '../lib/catalog.ts';
   import { forgetOptions, yours } from '../lib/memory.svelte.ts';
   import { loadAll } from '../lib/loaders.ts';
   import { nav } from '../lib/router.svelte.ts';
@@ -31,10 +32,7 @@
     ui.settings = false;
   }
 
-  const usedBy = (key: SharedKey) => {
-    const list = TOOLS.filter((tool) => (tool.shared as string[]).includes(key)).map(articleNo);
-    return list.length > 7 ? `${list.slice(0, 6).join(', ')} +${list.length - 6}` : list.join(', ');
-  };
+  const usedBy = (key: SharedKey) => TOOLS.filter((tool) => (tool.shared as string[]).includes(key));
 
   const zones = (() => {
     try {
@@ -85,7 +83,7 @@
           ] as { value: PhotoFormat; label: string }[]}
           onchange={(v) => (shared.photoFormat = v)}
         />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('photoFormat') })}</p>
+        <UsedBy tools={usedBy('photoFormat')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.quality')}</b><small>JPG · WebP</small></div>
@@ -99,11 +97,11 @@
           ]}
           onchange={(v) => (shared.quality = v)}
         />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('quality') })}</p>
+        <UsedBy tools={usedBy('quality')} />
       </div>
       <div class="set">
         <Check checked={shared.stripLocation} label={t('set.strip')} hint={t('set.strip.hint')} onchange={(v) => (shared.stripLocation = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('stripLocation') })}</p>
+        <UsedBy tools={usedBy('stripLocation')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.sizeTarget')}</b></div>
@@ -118,7 +116,7 @@
           ]}
           onchange={(v) => (shared.sizeTarget = v)}
         />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('sizeTarget') })}</p>
+        <UsedBy tools={usedBy('sizeTarget')} />
       </div>
     </section>
 
@@ -127,29 +125,29 @@
       <div class="set">
         <div class="l"><b>{t('set.pageSize')}</b>{#if isDefault('pageSize')}<small>{t('settings.followsDevice')}</small>{/if}</div>
         <Seg label={t('set.pageSize')} value={shared.pageSize} options={[{ value: 'a4', label: 'A4' }, { value: 'letter', label: 'Letter' }]} onchange={(v) => (shared.pageSize = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('pageSize') })}</p>
+        <UsedBy tools={usedBy('pageSize')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.units')}</b>{#if isDefault('units')}<small>{t('settings.followsDevice')}</small>{/if}</div>
         <Seg label={t('set.units')} value={shared.units} options={[{ value: 'metric', label: t('set.units.metric') }, { value: 'imperial', label: t('set.units.imperial') }]} onchange={(v) => (shared.units = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('units') })}</p>
+        <UsedBy tools={usedBy('units')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.decimal')}</b>{#if isDefault('decimal')}<small>{t('settings.followsDevice')}</small>{/if}</div>
         <Seg label={t('set.decimal')} value={shared.decimal} options={[{ value: 'comma', label: t('set.decimal.comma') }, { value: 'point', label: t('set.decimal.point') }]} onchange={(v) => (shared.decimal = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('decimal') })}</p>
+        <UsedBy tools={usedBy('decimal')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.week')}</b>{#if isDefault('week')}<small>{t('settings.followsDevice')}</small>{/if}</div>
         <Seg label={t('set.week')} value={shared.week} options={[{ value: 'iso', label: t('set.week.iso') }, { value: 'us', label: t('set.week.us') }]} onchange={(v) => (shared.week = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('week') })}</p>
+        <UsedBy tools={usedBy('week')} />
       </div>
       <div class="set">
         <label class="l" for="home-zone"><b>{t('set.homeZone')}</b>{#if isDefault('homeZone')}<small>{t('settings.followsDevice')}</small>{/if}</label>
         <select id="home-zone" class="field" value={shared.homeZone} onchange={(e) => (shared.homeZone = e.currentTarget.value)}>
           {#each zones as z (z)}<option value={z}>{z.replace(/_/g, ' ')}</option>{/each}
         </select>
-        <p class="used m">{t('settings.usedBy', { list: usedBy('homeZone') })}</p>
+        <UsedBy tools={usedBy('homeZone')} />
       </div>
     </section>
 
@@ -158,7 +156,7 @@
       <div class="set">
         <div class="l"><b>{t('set.names')}</b><small class="m">{shared.names === 'suffix' ? 'IMG_4127-small.jpg' : 'IMG_4127.jpg'}</small></div>
         <Seg label={t('set.names')} value={shared.names} options={[{ value: 'suffix', label: t('set.names.suffix') }, { value: 'same', label: t('set.names.same') }]} onchange={(v) => (shared.names = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('names') })}</p>
+        <UsedBy tools={usedBy('names')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.zipFrom')}</b><small>{t('set.zipFrom.hint')}</small></div>
@@ -173,17 +171,17 @@
           ]}
           onchange={(v) => (shared.zipFrom = v)}
         />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('zipFrom') })}</p>
+        <UsedBy tools={usedBy('zipFrom')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.passwordWords')}</b>{#if isDefault('passwordWords')}<small>{t('settings.followsDevice')}</small>{/if}</div>
         <Seg label={t('set.passwordWords')} value={shared.passwordWords} options={[{ value: 'en', label: t('set.passwordWords.en') }, { value: 'de', label: t('set.passwordWords.de') }]} onchange={(v) => (shared.passwordWords = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('passwordWords') })}</p>
+        <UsedBy tools={usedBy('passwordWords')} />
       </div>
       <div class="set">
         <div class="l"><b>{t('set.csv')}</b>{#if isDefault('csv')}<small>{t('set.csv.hint')}</small>{/if}</div>
         <Seg label={t('set.csv')} value={shared.csv} options={[{ value: 'semicolon', label: t('set.csv.semicolon') }, { value: 'comma', label: t('set.csv.comma') }]} onchange={(v) => (shared.csv = v)} />
-        <p class="used m">{t('settings.usedBy', { list: usedBy('csv') })}</p>
+        <UsedBy tools={usedBy('csv')} />
       </div>
     </section>
 
@@ -191,7 +189,7 @@
       <h3 class="h">{t('settings.shelf')}</h3>
       <div class="set">
         <Check checked={shared.dev} label={t('set.dev')} hint={t('set.dev.hint')} onchange={(v) => (shared.dev = v)} />
-        <p class="used m">{t('settings.usedBy', { list: 'F-901–F-911' })}</p>
+        <UsedBy tools={TOOLS.filter((tool) => tool.chip === 'dev')} />
       </div>
       <div class="set">
         <Check checked={shared.offline} disabled={offlineBusy} label={t('set.offline')} hint={t('set.offline.hint')} onchange={offline} />
@@ -277,11 +275,6 @@
     color: var(--ink-2);
   }
 
-  .used {
-    color: var(--ink-2);
-    font-size: 10px;
-  }
-
   select.field {
     max-width: 320px;
   }
@@ -346,7 +339,7 @@
       column-gap: 16px;
     }
 
-    .set .used {
+    .set > :global(.used) {
       grid-column: 1 / -1;
     }
   }
