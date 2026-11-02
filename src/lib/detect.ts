@@ -29,6 +29,8 @@ async function forFile(file: File): Promise<Suggestion[]> {
     const dims = dimensions(head);
     const meta = kind === 'heic' || kind === 'avif' ? readMeta(new Uint8Array(await file.arrayBuffer())) : readMeta(head);
     const out: Suggestion[] = [];
+    // A PNG no camera made is most likely a screenshot.
+    if (kind === 'png' && !meta.make && !meta.model) out.push(s('frame', 'A screenshot: put it in a frame', 'Ein Screenshot: in einen Rahmen setzen'));
     if (kind === 'heic') out.push(s('convert', "It's a HEIC: make it a JPG", 'Ein HEIC: mach ein JPG daraus'));
     else if (kind === 'avif' || kind === 'webp') out.push(s('convert', `It's a ${kind.toUpperCase()}: make it a JPG`, `Ein ${kind.toUpperCase()}: mach ein JPG daraus`));
     if (file.size > 1e6) out.push(s('shrink', `${size}: make it smaller`, `${size}: mach es kleiner`));
@@ -39,10 +41,13 @@ async function forFile(file: File): Promise<Suggestion[]> {
     if (file.size <= 1e6) out.push(s('shrink', `${size}: smaller still`, `${size}: noch kleiner`));
     if (!meta.gps) out.push(s('location', 'See what it gives away', 'Sieh, was es verrät'));
     out.push(s('blur', 'Hide a face or a number', 'Ein Gesicht oder eine Nummer verbergen'));
+    if (dims && dims.width >= dims.height * 2) out.push(s('carousel', 'Wide: slice it for a carousel', 'Breit: für ein Karussell zerschneiden'));
     out.push(s('topdf', 'Put it in a PDF', 'In ein PDF legen'));
     if (dims && Math.abs(dims.width - dims.height) <= Math.max(dims.width, dims.height) / 10) out.push(s('icons', 'Square: make icons from it', 'Quadratisch: Icons daraus machen'));
     out.push(s('colours', 'Pick a colour from it', 'Eine Farbe daraus wählen'));
     out.push(s('qr', 'Read a QR code in it', 'Einen QR-Code darin lesen'));
+    out.push(s('meme', 'Put a caption on it', 'Text draufschreiben'));
+    if (kind !== 'png') out.push(s('frame', 'Put it on a ground, in a frame', 'Auf einen Grund, in einen Rahmen'));
     return out;
   }
   if (kind === 'pdf') {
@@ -79,15 +84,40 @@ async function forFile(file: File): Promise<Suggestion[]> {
   return [s('hash', 'Its checksum, to compare with the download page', 'Die Prüfsumme, zum Vergleich mit der Download-Seite'), s('base64', 'As Base64', 'Als Base64')];
 }
 
+/** A pasted date as ISO (`2026-10-31`), from 31.10.2026 or 10/31/2026; the rest as typed. */
+function dayOf(text: string): string {
+  const t = text.trim();
+  const de = t.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/);
+  const us = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  const year = (y: string) => (y.length === 2 ? (Number(y) > 50 ? '19' : '20') + y : y);
+  if (de) return `${year(de[3])}-${de[2].padStart(2, '0')}-${de[1].padStart(2, '0')}`;
+  if (us) return `${year(us[3])}-${us[1].padStart(2, '0')}-${us[2].padStart(2, '0')}`;
+  return t;
+}
+
 function forText(text: string): Suggestion[] {
   const kinds = shapes(text);
   const out: Suggestion[] = [];
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   if (kinds.includes('mojibake')) out.push(s('umlauts', 'These umlauts look broken: fix them', 'Diese Umlaute sehen kaputt aus: reparieren'));
+  if (kinds.includes('invisible')) out.push(s('invisible', 'It hides characters you can’t see: find them', 'Darin verstecken sich Zeichen, die du nicht siehst: finden'));
+  if (kinds.includes('fancy')) out.push(s('fancy', 'Fancy letters: make them plain again', 'Ausgefallene Buchstaben: wieder normal machen'));
   for (const k of kinds) {
     if (k === 'link') out.push(s('qr', 'A link: make it a QR code', 'Ein Link: mach einen QR-Code daraus'), s('url', 'Read or encode the link', 'Den Link lesen oder kodieren'));
     if (k === 'timestamp') out.push(s('stamp', 'A Unix time: see the date', 'Eine Unix-Zeit: das Datum dazu'));
-    if (k === 'date') out.push(s('dates', 'A date: days until, the week', 'Ein Datum: Tage bis dahin, die Woche'), s('stamp', 'As a timestamp', 'Als Zeitstempel'));
+    if (k === 'date') {
+      out.push(s('dates', 'A date: days until, the week', 'Ein Datum: Tage bis dahin, die Woche'));
+      const day = Date.parse(dayOf(text));
+      if (day > Date.now()) out.push(s('clock', 'Count down to it on a flip clock', 'Auf einer Fallblattuhr runterzählen'));
+      else if (day < Date.now()) out.push(s('life', 'A birthday? Your life in numbers', 'Ein Geburtstag? Dein Leben in Zahlen'));
+      out.push(s('stamp', 'As a timestamp', 'Als Zeitstempel'));
+    }
+    if (k === 'list') {
+      const n = text.split(/\r?\n/).filter((l) => l.trim()).length;
+      out.push(s('random', `${n} lines: pick one, or make teams`, `${n} Zeilen: eine losen oder Teams bilden`));
+    }
+    if (k === 'easing') out.push(s('easing', 'A timing curve: see and change it', 'Eine Zeitkurve: ansehen und ändern'));
+    if (k === 'shadow') out.push(s('shadows', 'A shadow: see and smooth it', 'Ein Schatten: ansehen und glätten'));
     if (k === 'json') {
       out.push(s('json', 'JSON: format and check it', 'JSON: formatieren und prüfen'), s('yaml', 'As YAML', 'Als YAML'));
       if (text.trim().startsWith('[')) out.push(s('csvjson', 'As a CSV', 'Als CSV'));
@@ -109,6 +139,8 @@ function forText(text: string): Suggestion[] {
       out.push(s('count', `${words} ${words === 1 ? 'word' : 'words'}: count them`, `${words} ${words === 1 ? 'Wort' : 'Wörter'}: zählen`));
       out.push(s('clean', 'Tidy its case and spacing', 'Schreibung und Abstände aufräumen'));
       out.push(s('compare', 'Compare it with another version', 'Mit einer anderen Fassung vergleichen'));
+      if (words >= 80) out.push(s('prompter', 'Long enough to read out: a teleprompter', 'Lang genug zum Vorlesen: ein Teleprompter'));
+      if (words <= 12 && !text.includes('\n')) out.push(s('fancy', 'In fancy letters', 'In ausgefallenen Buchstaben'));
       if (!kinds.includes('link')) out.push(s('qr', 'Put it in a QR code', 'In einen QR-Code packen'));
       out.push(s('hash', 'Its hash', 'Der Hash'));
     }

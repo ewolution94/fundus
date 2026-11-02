@@ -24,6 +24,7 @@
     { name: 'Lucide', licence: 'ISC', url: 'https://github.com/lucide-icons/lucide', use: 'Icons' },
     { name: 'Schibsted Grotesk', licence: 'OFL-1.1', url: 'https://github.com/schibsted/schibsted-grotesk', use: 'Type' },
     { name: 'Martian Mono', licence: 'OFL-1.1', url: 'https://github.com/evilmartians/mono', use: 'Type' },
+    { name: 'Anton (@fontsource/anton)', licence: 'OFL-1.1', url: 'https://github.com/googlefonts/AntonFont', use: 'F-108: the meme face' },
   ];
 
   $effect(() => {

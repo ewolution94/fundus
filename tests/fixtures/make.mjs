@@ -61,6 +61,23 @@ sips('-s', 'format', 'png', '-Z', '900', SOURCE, '--out', p('photo.png'));
     return btoa(String.fromCharCode(...new Uint8Array(await blob.arrayBuffer())));
   }, png);
   await writeFile(p('photo.webp'), Buffer.from(webp, 'base64'));
+  // A phone screenshot: a PNG at an iPhone's size with no camera in it.
+  const shot = await page.evaluate(async () => {
+    const canvas = new OffscreenCanvas(1179, 2556);
+    const g = canvas.getContext('2d');
+    g.fillStyle = '#f5f5f2';
+    g.fillRect(0, 0, 1179, 2556);
+    g.fillStyle = '#121212';
+    g.fillRect(0, 0, 1179, 300);
+    g.fillStyle = '#ffe14a';
+    for (let i = 0; i < 9; i++) g.fillRect(72, 420 + i * 230, 1035, 160);
+    g.fillStyle = '#121212';
+    g.font = 'bold 96px sans-serif';
+    g.fillText('Fundus', 72, 220);
+    const blob = await canvas.convertToBlob({ type: 'image/png' });
+    return btoa(String.fromCharCode(...new Uint8Array(await blob.arrayBuffer())));
+  });
+  await writeFile(p('screenshot.png'), Buffer.from(shot, 'base64'));
   await browser.close();
 }
 await writeFile(p('letter.pdf'), await pdf(3, 'Letter'));
@@ -96,6 +113,8 @@ await writeFile(p('logo.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox=
 await writeFile(p('wide.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" viewBox="0 0 300 100"><rect width="300" height="100" fill="#121212"/><circle cx="50" cy="50" r="30" fill="#ffe14a"/></svg>\n');
 await writeFile(p('foreign.svg'), '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><foreignObject width="200" height="100"><div xmlns="http://www.w3.org/1999/xhtml">Fundus</div></foreignObject></svg>\n');
 // A square photo, for icons.
+// A panorama, three times as wide as it is high.
+sips('-s', 'format', 'jpeg', '-s', 'formatOptions', '85', '--cropToHeightWidth', '1280', '3840', SOURCE, '--out', p('panorama.jpg'));
 sips('-s', 'format', 'png', '--cropToHeightWidth', '2160', '2160', SOURCE, '--out', p('square.png'));
 sips('-Z', '600', p('square.png'));
 // Sound: a voice memo (mono M4A, as the iPhone records them), a stereo tone in five formats, and a
@@ -115,8 +134,11 @@ await writeFile(p('config.yaml'), '# Fundus sample\nname: fundus\nport: 4330\nto
 const right = 'Grüße aus Köln, schöne „Anführungszeichen“ und 5 €.';
 await writeFile(p('broken.txt'), new TextDecoder('windows-1252').decode(Buffer.from(right, 'utf8')) + '\n');
 await writeFile(p('win1252.txt'), cp1252('Grüße aus Köln, der Preis: 12 €.\n'));
+// Hidden characters: a zero-width space, a soft hyphen, a narrow no-break space, a right-to-left
+// mark, a byte-order mark and a Cyrillic а in "Pаypal".
+await writeFile(p('hidden.txt'), 'IBAN DE89\u200B 3704 0044 0532 0130 00, Ver\u00ADtrag, 10:00\u202FAM, \u200Fok, \uFEFFPаypal\n');
 
-for (const name of ['photo.heic', 'small.heic', 'photo.jpg', 'mid.jpg', 'mid-gps.jpg', 'photo.png', 'photo.webp', 'letter.pdf', 'annex.pdf', 'notes.txt', 'bank.csv', 'shop.csv', 'sheet.xlsx', 'logo.svg', 'wide.svg', 'foreign.svg', 'square.png', 'voice.m4a', 'tone.wav', 'tone.mp3', 'tone.flac', 'tone.ogg', 'clip.mp4', 'config.yaml', 'broken.txt', 'win1252.txt']) {
+for (const name of ['photo.heic', 'small.heic', 'photo.jpg', 'mid.jpg', 'mid-gps.jpg', 'photo.png', 'photo.webp', 'letter.pdf', 'annex.pdf', 'notes.txt', 'bank.csv', 'shop.csv', 'sheet.xlsx', 'logo.svg', 'wide.svg', 'foreign.svg', 'square.png', 'voice.m4a', 'tone.wav', 'tone.mp3', 'tone.flac', 'tone.ogg', 'clip.mp4', 'config.yaml', 'broken.txt', 'win1252.txt', 'screenshot.png', 'panorama.jpg', 'hidden.txt']) {
   const size = (await readFile(p(name))).length;
   console.log(`${name.padEnd(14)} ${(size / 1e6).toFixed(2)} MB`);
 }

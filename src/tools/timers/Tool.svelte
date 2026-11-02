@@ -13,6 +13,8 @@
   import { remember } from '../../lib/memory.svelte.ts';
   import { texts, type Item } from '../../lib/inbox.svelte.ts';
   import type { Tool } from '../../lib/catalog.ts';
+  import { Awake } from '../../lib/awake.svelte.ts';
+  import { unlockAudio } from '../../lib/sound.ts';
   import {
     parseDuration,
     clock,
@@ -134,13 +136,7 @@
   //    (iOS allows nothing else), so every Start unlocks it.
   let audio: AudioContext | null = null;
   function unlock() {
-    try {
-      const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!audio && Ctx) audio = new Ctx();
-      if (audio?.state === 'suspended') void audio.resume().catch(() => {});
-    } catch {
-      audio = null;
-    }
+    audio = unlockAudio();
   }
 
   function beep() {
@@ -259,51 +255,21 @@
 
   // ── The screen stays on ────────────────────────────────────────────────────────────────────
 
-  let lockNote = $state<'' | 'on' | 'off' | 'denied'>('');
-  let sentinel: WakeLockSentinel | null = null;
-
-  async function keepAwake(on: boolean) {
-    if (!on) {
-      lockNote = '';
-      const s = sentinel;
-      sentinel = null;
-      try {
-        await s?.release();
-      } catch {}
-      return;
-    }
-    if (!('wakeLock' in navigator)) {
-      lockNote = 'off';
-      return;
-    }
-    if (sentinel || document.visibilityState !== 'visible') return;
-    try {
-      const s = await navigator.wakeLock.request('screen');
-      sentinel = s;
-      lockNote = 'on';
-      // The browser lets it go when the tab is hidden; visibilitychange takes it back.
-      s.addEventListener('release', () => {
-        if (sentinel === s) sentinel = null;
-      });
-    } catch {
-      lockNote = 'denied';
-    }
-  }
+  const awake = new Awake();
 
   $effect(() => {
-    void keepAwake(busy);
+    void awake.set(busy);
   });
 
   $effect(() => {
     const back = () => {
       if (document.visibilityState !== 'visible') return;
       check();
-      if (untrack(() => busy)) void keepAwake(true);
     };
     document.addEventListener('visibilitychange', back);
     return () => {
       document.removeEventListener('visibilitychange', back);
-      void keepAwake(false);
+      awake.destroy();
     };
   });
 
@@ -424,7 +390,7 @@
       {/if}
     </section>
 
-    {#if lockNote === 'on'}<p class="note">{w('lockOn')}</p>{:else if lockNote === 'off'}<p class="note">{w('lockOff')}</p>{:else if lockNote === 'denied'}<p class="note">{w('lockDenied')}</p>{/if}
+    {#if awake.note === 'on'}<p class="note">{w('lockOn')}</p>{:else if awake.note === 'off'}<p class="note">{w('lockOff')}</p>{:else if awake.note === 'denied'}<p class="note">{w('lockDenied')}</p>{/if}
     <p class="note">{w('sound')}</p>
   </div>
 </div>

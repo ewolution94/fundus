@@ -39,7 +39,7 @@ test('folds accents and German letters', () => {
 
 test('every tool has a unique id, number and address', () => {
   for (const key of ['id', 'no', 'path']) assert.equal(new Set(TOOLS.map((t) => t[key])).size, TOOLS.length, key);
-  assert.equal(TOOLS.length, 37);
+  assert.equal(TOOLS.length, 49);
 });
 
 test('knows what a pasted text is', () => {
@@ -76,4 +76,29 @@ test('knows the shapes round 2 added', () => {
   assert.ok(!shapes('[{"a":1},{"a":2}]').includes('csv'));
   assert.ok(shapes('name: fundus\nport: 4330\ntools:\n  - shrink\n  - percent').includes('yaml'));
   assert.ok(!shapes('Dear Anna,\nthanks for the note.').includes('yaml'));
+});
+
+test('knows the shapes round 3 added', () => {
+  assert.ok(shapes('𝓗𝓮𝓵𝓵𝓸').includes('fancy'));
+  assert.ok(shapes('ℋ𝑒𝓁𝓁ℴ').includes('fancy'));
+  assert.ok(shapes('Ｈｅｌｌｏ').includes('fancy'));
+  assert.ok(!shapes('Hello ℝ').includes('fancy'));
+  assert.ok(shapes('Pay​pal').includes('invisible'));
+  assert.ok(shapes('Pаypal').includes('invisible'));
+  assert.ok(shapes('10:00 AM').includes('invisible'));
+  assert.ok(!shapes('5 €').includes('invisible'));
+  assert.ok(!shapes('μm').includes('invisible'));
+  assert.ok(!shapes('Grüße aus Köln').includes('invisible'));
+  assert.deepEqual(shapes('cubic-bezier(0.25, 0.1, 0.25, 1)'), ['easing', 'text']);
+  assert.ok(shapes('transition: transform 300ms cubic-bezier(.2,.8,.2,1);').includes('easing'));
+  assert.ok(shapes('linear(0, 0.5 25%, 1)').includes('easing'));
+  assert.ok(shapes('0 1px 2px rgba(0,0,0,.2)').includes('shadow'));
+  assert.ok(shapes('box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 8px 24px -4px #0003;').includes('shadow'));
+  assert.ok(shapes('inset 0 0 0 1px #fff').includes('shadow'));
+  assert.ok(!shapes('#ff0000').includes('shadow'));
+  assert.ok(!shapes('12 px').includes('shadow'));
+  assert.ok(shapes('Anna\nBen\nCarla\nDeniz').includes('list'));
+  assert.ok(!shapes('Hello world. This is prose.\nAnd more prose here.').includes('list'));
+  assert.ok(!shapes('name;plz;ort\nAnna;01067;Dresden\nBen;80331;München').includes('list'));
+  assert.ok(!shapes('Anna').includes('list'));
 });

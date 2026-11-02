@@ -3,9 +3,9 @@
 Everyday tools that run on your device: photos, PDFs, text, numbers, time and audio. Nothing you put in
 leaves it. Live at [fundus.ewolution.cloud](https://fundus.ewolution.cloud).
 
-- **A parts index.** Twenty-six tools in six shelves, each with an article number whose hundreds are
+- **A parts index.** Thirty-six tools in six shelves, each with an article number whose hundreds are
   its shelf (F-102 Shrink a photo, F-502 Percent & VAT), what it takes and what it gives. A developer
-  shelf of eleven more (900) waits behind a switch in Settings.
+  shelf of thirteen more (900) waits behind a switch in Settings.
 - **Drop anything on the home.** A photo, a PDF, a sound, a table, a text, a link or a number,
   dropped, pasted or picked: the tools that take it come first, each with its reason ("It's a HEIC: make it a JPG",
   "It knows where it was taken").
@@ -28,13 +28,13 @@ leaves it. Live at [fundus.ewolution.cloud](https://fundus.ewolution.cloud).
 
 | No. | Tool | Shelf |
 |---|---|---|
-| F-101–107 | Convert photos, Shrink a photo, Resize & crop, Remove location, Blur parts, Photos to PDF, Make icons | Photo |
+| F-101–110 | Convert photos, Shrink a photo, Resize & crop, Remove location, Blur parts, Photos to PDF, Make icons, Meme maker, Screenshot frame, Carousel slicer | Photo |
 | F-201–203 | Arrange a PDF, Sign a PDF, PDF to photos | PDF |
-| F-301–305 | Count words, Clean up text, Compare texts, Fix umlauts, CSV & Excel | Text |
-| F-401–403 | Make a QR code, Make a password, Colours | From scratch |
-| F-501–507 | Dates & weeks, Percent & VAT, Convert units, Time zones, Split a bill, Timers, Amount in words | Numbers & time |
-| F-601 | Convert audio | Audio |
-| F-901–911 | Format JSON, Base64, Encode URLs, Timestamps, UUIDs, Hashes, JWTs, Regex, CSV ↔ JSON, YAML ↔ JSON, Number bases | Developer (off by default) |
+| F-301–308 | Count words, Clean up text, Compare texts, Fix umlauts, CSV & Excel, Fancy text, Invisible characters, Teleprompter | Text |
+| F-401–404 | Make a QR code, Make a password, Colours, Coin, dice, pick one | From scratch |
+| F-501–509 | Dates & weeks, Percent & VAT, Convert units, Time zones, Split a bill, Timers, Amount in words, Life in numbers, Flip clock | Numbers & time |
+| F-601–602 | Convert audio, Hearing test | Audio |
+| F-901–913 | Format JSON, Base64, Encode URLs, Timestamps, UUIDs, Hashes, JWTs, Regex, CSV ↔ JSON, YAML ↔ JSON, Number bases, Easing curves, Shadows | Developer (off by default) |
 
 The catalog (`shared/catalog.mjs`) holds each tool's number, address, names, synonyms, what it takes
 and gives, and the shared settings it reads; the home, search, detection, chaining, the page heads
