@@ -50,12 +50,23 @@ const HIDDEN = /[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180E\u2000-\u200F\u
 // A word with Latin letters and Cyrillic or Greek ones in it: "Pаypal" with a Cyrillic а.
 const MIXED = /(?=[\p{L}\p{M}]*\p{Script=Latin})(?=[\p{L}\p{M}]*[\p{Script=Cyrillic}\p{Script=Greek}])[\p{L}\p{M}]{3,}/u;
 // A CSS timing function: cubic-bezier(…), linear(…) or steps(…), with or without its property.
-const EASING = /^((transition|animation)(-timing-function)?\s*:\s*([\w-]+\s+)*)?(cubic-bezier\(\s*-?[\d.]+\s*(,\s*-?[\d.]+\s*){3}\)|linear\([^()]+\))[^;]*;?$/i;
+const EASING = /^((transition|animation)(-timing-function)?\s*:\s*([\w.-]+,?\s+)*)?(cubic-bezier\(\s*-?[\d.]+\s*(,\s*-?[\d.]+\s*){3}\)|linear\([^()]+\))[^;]*;?$/i;
 // A box-shadow value: layers of two to four lengths and a colour (either way round), `inset` allowed.
 const LENGTH = String.raw`-?(\d*\.)?\d+(px|rem|em)?`;
 const COLOR = String.raw`(#[0-9a-f]{3,8}|(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|[a-z]+)`;
 const LAYER = String.raw`(inset\s+)?((${LENGTH}\s+){1,3}${LENGTH}\s+${COLOR}|${COLOR}\s+(${LENGTH}\s+){1,3}${LENGTH})(\s+inset)?`;
 const SHADOW = new RegExp(String.raw`^(box-shadow\s*:\s*)?${LAYER}(\s*,\s*${LAYER})*\s*;?$`, 'i');
+
+// Emoji sequences legitimately hold joiners, variation selectors and tags: ❤️, 👩‍💻, 1️⃣, a regional flag.
+const EMOJI = /\u{1F3F4}[\u{E0061}-\u{E007A}]+\u{E007F}|\p{Extended_Pictographic}[\uFE0E\uFE0F]?(\u200D\p{Extended_Pictographic}[\uFE0E\uFE0F]?)*|[0-9#*]\uFE0F?\u20E3/gu;
+// Control characters other than tab and line breaks, and three or more marks piled on one letter.
+const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]|\p{M}{3,}/u;
+
+/** Whether a text hides characters (Invisible characters finds and names them). */
+function hides(t: string): boolean {
+  const rest = t.replace(EMOJI, '');
+  return HIDDEN.test(rest) || CONTROL.test(rest) || MIXED.test(t);
+}
 
 /** Two to 200 short lines (names, options), not a table and not prose: a list to pick from. */
 function isList(t: string): boolean {
@@ -109,7 +120,7 @@ export function shapes(input: string): Shape[] {
   if (/^(urn:uuid:)?\{?[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}\}?$/i.test(t)) out.push('uuid');
   if (MOJIBAKE.test(t)) out.push('mojibake');
   if ((t.match(FANCY) ?? []).length >= 2) out.push('fancy');
-  if (HIDDEN.test(t) || MIXED.test(t)) out.push('invisible');
+  if (hides(t)) out.push('invisible');
   if (EASING.test(t)) out.push('easing');
   else if (SHADOW.test(t) && !out.includes('colour')) out.push('shadow');
   if (!out.some((k) => k === 'json' || k === 'csv' || k === 'yaml') && isList(t)) out.push('list');

@@ -30,7 +30,8 @@
   function keys(e: KeyboardEvent) {
     const inField = e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable]');
     if (e.metaKey || e.ctrlKey || e.altKey || inField) return;
-    if (ui.settings) return;
+    // A tool's own stage (the teleprompter, the flip clock) has the keys while it's open.
+    if (e.defaultPrevented || ui.settings || document.querySelector('[aria-modal="true"]')) return;
     if (e.key === '/') {
       e.preventDefault();
       ui.search = true;

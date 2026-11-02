@@ -89,9 +89,15 @@ test('knows the shapes round 3 added', () => {
   assert.ok(!shapes('5 €').includes('invisible'));
   assert.ok(!shapes('μm').includes('invisible'));
   assert.ok(!shapes('Grüße aus Köln').includes('invisible'));
+  for (const e of ['Love it ❤️', 'Dev 👩‍💻', 'Press 1️⃣', 'Go \u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}']) assert.ok(!shapes(e).includes('invisible'), e);
+  assert.ok(shapes('Love\u200B it ❤️').includes('invisible'));
+  assert.ok(shapes('bell\u0007').includes('invisible'));
+  assert.ok(shapes('Z\u0301\u0302\u0303algo').includes('invisible'));
   assert.deepEqual(shapes('cubic-bezier(0.25, 0.1, 0.25, 1)'), ['easing', 'text']);
   assert.ok(shapes('transition: transform 300ms cubic-bezier(.2,.8,.2,1);').includes('easing'));
   assert.ok(shapes('linear(0, 0.5 25%, 1)').includes('easing'));
+  assert.ok(shapes('transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);').includes('easing'));
+  assert.ok(shapes('transition: color 0.2s, transform .3s cubic-bezier(.2,.8,.2,1)').includes('easing'));
   assert.ok(shapes('0 1px 2px rgba(0,0,0,.2)').includes('shadow'));
   assert.ok(shapes('box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 8px 24px -4px #0003;').includes('shadow'));
   assert.ok(shapes('inset 0 0 0 1px #fff').includes('shadow'));
