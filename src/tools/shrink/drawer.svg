@@ -1,0 +1,5 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <rect class="s2" x="7" y="10" width="34" height="28" rx="1.5" stroke-dasharray="2.2 2.6"/>
+  <g class="sh-pic"><rect class="o ns" x="7" y="10" width="34" height="28" rx="2"/><path class="ns" d="M7.6 33.4l8.6-8.6 8 8 4.6-4.6 11.6 10.4"/><circle class="ns" cx="31" cy="18" r="2.8"/></g>
+  <path class="sh-arr" d="M40 12L29.5 22.5M29.5 16.5v6h6"/>
+</svg>

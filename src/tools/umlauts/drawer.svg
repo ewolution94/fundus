@@ -1,0 +1,5 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <path d="M16.5 18v9.5a7 7 0 0 0 14 0V18M30.5 27.5V35"/>
+  <circle class="f um-d" style="--i:0;--dx:-4px;--r:-50deg" cx="19.5" cy="11.5" r="2.2"/><circle class="f um-d" style="--i:1;--dx:4px;--r:50deg" cx="27.5" cy="11.5" r="2.2"/>
+  <g class="um-x"><path class="o" d="M39 20l5 6.5-5 6.5-5-6.5Z"/><circle class="f" cx="39" cy="28.8" r="1"/><path d="M37.4 24.3a1.7 1.7 0 1 1 2.4 1.5"/></g>
+</svg>

@@ -1,0 +1,144 @@
+/*
+  A tool's specimen plate (Specimen.svelte): the figure in its head, drawn by src/tools/<id>/plate.ts
+  with lib/plate.ts. Global, because the drawing comes in as markup.
+*/
+
+.specimen {
+  --ow: 1.3;
+  --cw: 0.6;
+  --af: 7.6px;
+  --kf: 8.2px;
+  --grid: color-mix(in srgb, var(--rule) 58%, transparent);
+  display: block;
+  margin: 0;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.specimen .fig {
+  display: block;
+  aspect-ratio: 4 / 3;
+  background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px), linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: calc(100% / 20) calc(100% / 15);
+  background-position: -0.5px -0.5px;
+}
+
+.specimen svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The caption strip: Fig. number and shelf, in mono. */
+.specimen .cap {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 8px;
+  padding: 6px 10px 7px;
+  border-top: 1px solid var(--rule);
+}
+
+.specimen .no,
+.specimen .sh {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 16px;
+}
+
+.specimen .no {
+  justify-self: start;
+  margin-left: -4px;
+  padding: 0 4px;
+  color: var(--ink-2);
+  background: linear-gradient(177deg, transparent 10%, var(--mark) 10% 88%, transparent 88%) no-repeat 0 0 / 0% 100%;
+  transition:
+    background-size 0.2s ease-out,
+    color 0.2s;
+}
+
+.specimen .sh {
+  justify-self: end;
+  color: var(--ink-2);
+}
+
+.specimen.held .no {
+  background-size: 100% 100%;
+  color: var(--mark-ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .specimen:hover .no {
+    background-size: 100% 100%;
+    color: var(--mark-ink);
+  }
+}
+
+/* The drawing: object lines, thin construction, phantom and centre lines, dimensions, notes. */
+.specimen svg path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.specimen svg .o { stroke: var(--ink); stroke-width: var(--ow); }
+.specimen svg .o.w { fill: var(--card); }
+.specimen svg .o.fq { stroke-width: 2.56; stroke-linecap: butt; stroke-linejoin: miter; }
+.specimen svg .o.bar { stroke-width: calc(var(--ow) * 2.2); stroke-linecap: butt; }
+.specimen svg .o.dg { stroke-width: calc(var(--ow) * 2.4); }
+.specimen svg .c { stroke: var(--ink-2); stroke-width: var(--cw); }
+.specimen svg .h { stroke: var(--ink-2); stroke-width: var(--cw); stroke-dasharray: 3 2; }
+.specimen svg .cl { stroke: var(--ink-2); stroke-width: var(--cw); stroke-dasharray: 5 1.5 1 1.5; }
+.specimen svg .d { stroke: var(--ink-2); stroke-width: var(--cw); }
+.specimen svg .f { fill: var(--ink); stroke: none; }
+.specimen svg .a { fill: var(--ink-2); stroke: none; }
+.specimen svg :is(.t, .k) { font-family: var(--mono); font-weight: 500; fill: var(--ink); letter-spacing: 0.02em; }
+.specimen svg .t { font-size: var(--af); }
+.specimen svg .t2 { fill: var(--ink-2); }
+.specimen svg .k { font-size: var(--kf); }
+.specimen svg .k.bal { font-size: calc(var(--kf) * 1.25); }
+/* The password fills its field at one size, on the phone too. */
+.specimen svg .k.pwc { font-size: 8.2px; }
+.specimen svg .mm { font-family: Anton, Impact, var(--sans); font-weight: 800; font-size: 13px; fill: var(--card); stroke: var(--ink); stroke-width: 1.8; stroke-linejoin: round; paint-order: stroke fill; }
+.specimen svg .pw .f { opacity: 0; }
+
+/* Drawing it on: the lines drafted, then the notes. */
+.specimen .drawing svg :is(.o, .c) {
+  stroke-dasharray: 1 2;
+  animation: specimen-draw var(--t, 0.5s) var(--e, cubic-bezier(0.45, 0.05, 0.3, 1)) var(--d, 0.15s) both;
+}
+.specimen .drawing svg .c { animation-duration: var(--t, 0.35s); animation-delay: var(--d, 0s); }
+.specimen .drawing svg .o.w { animation-name: specimen-draw, specimen-fill; }
+.specimen .drawing svg :is(.h, .cl, .f, .d, .a, .t, .k) { animation: specimen-fade 0.3s ease-out var(--d, 1s) both; }
+.specimen .drawing svg :is(.t, .k) { animation-delay: var(--d, 1.1s); }
+.specimen .drawing svg .pw .f { animation: specimen-blink 0.75s linear var(--d, 0.25s) both; }
+.specimen .drawing svg .pwc { animation-delay: 0.82s; }
+.specimen .drawing svg .dn { animation: specimen-dn 0.45s cubic-bezier(0.3, 0.7, 0.4, 1) var(--d) both; }
+.specimen .drawing svg .up { animation: specimen-up 0.45s cubic-bezier(0.3, 0.7, 0.4, 1) var(--d) both; }
+.specimen .drawing svg .rise { animation: specimen-rise 1.3s cubic-bezier(0.3, 0, 0.5, 1) var(--d, 0.3s) both; }
+.specimen .drawing svg .ex { animation: specimen-ex 0.8s linear 0.95s both; }
+.specimen .drawing svg .ey { animation: specimen-ey 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.95s both; }
+@keyframes specimen-draw { from { stroke-dashoffset: 1.01; } to { stroke-dashoffset: 0; } }
+@keyframes specimen-fill { from { fill-opacity: 0; } 60% { fill-opacity: 0; } to { fill-opacity: 1; } }
+@keyframes specimen-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes specimen-blink { from { opacity: 0; } 15% { opacity: 1; } 70% { opacity: 1; } to { opacity: 0; } }
+@keyframes specimen-dn { from { opacity: 0; transform: translateY(-9px); } to { opacity: 1; transform: none; } }
+@keyframes specimen-up { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+@keyframes specimen-rise { from { transform: translateY(10px); } to { transform: none; } }
+@keyframes specimen-ex { from { transform: translateX(-80px); } to { transform: none; } }
+@keyframes specimen-ey { from { transform: translateY(56px); } to { transform: none; } }
+
+/* Reduced motion: the plate sits drawn; only the mark answers. */
+@media (prefers-reduced-motion: reduce) {
+  .specimen *,
+  .specimen .drawing * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

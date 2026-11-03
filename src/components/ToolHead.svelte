@@ -1,6 +1,7 @@
 <!--
   A tool's head on its spec sheet: the crumbs (F-102 · Photo · Shrink a photo), the name big, what it
-  does, and the pin. A result handed on from another tool says where it came from.
+  does, the pin, and the tool's specimen plate beside them (at the right on a computer, beside the
+  line under the name on a phone). A result handed on from another tool says where it came from.
 -->
 <script lang="ts">
   import { Pin, PinOff } from '@lucide/svelte';
@@ -8,6 +9,7 @@
   import { pick, t } from '../lib/i18n.svelte.ts';
   import { yours } from '../lib/memory.svelte.ts';
   import { nav } from '../lib/router.svelte.ts';
+  import Specimen from './Specimen.svelte';
 
   interface Props {
     tool: Tool;
@@ -37,16 +39,25 @@
     </button>
   </div>
   {#if source}<p class="from m">{t('tool.from', { tool: `${articleNo(source)} ${pick(source.name)}` })}</p>{/if}
+  <div class="plate-at">
+    {#key tool.id}<Specimen {tool} />{/key}
+  </div>
 </header>
 
 <style>
+  /* On a phone the plate sits beside the line under the name, which stacks the pin under it. */
   .head {
     display: grid;
-    gap: 6px;
+    grid-template-columns: 152px minmax(0, 1fr);
+    grid-template-areas: 'crumbs crumbs' 'title title' 'plate sub' 'plate from';
+    grid-template-rows: auto auto auto 1fr;
+    column-gap: 14px;
+    row-gap: 6px;
     min-width: 0;
   }
 
   .crumbs {
+    grid-area: crumbs;
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
@@ -64,6 +75,8 @@
   }
 
   h1 {
+    grid-area: title;
+    margin-bottom: 4px;
     font-size: 36px;
     font-weight: 800;
     letter-spacing: -0.04em;
@@ -72,10 +85,33 @@
   }
 
   .sub {
+    grid-area: sub;
     display: flex;
-    align-items: baseline;
-    gap: 12px;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding-top: 2px;
+  }
+
+  .plate-at {
+    grid-area: plate;
+    align-self: start;
+  }
+
+  .plate-at :global(.specimen) {
+    width: 152px;
+    --ow: 1.6;
+    --cw: 0.75;
+    --af: 9.6px;
+    --kf: 10.2px;
+  }
+
+  .plate-at :global(.specimen .cap) {
+    padding: 4px 7px 5px;
+  }
+
+  .plate-at :global(.specimen .sh) {
+    display: none;
   }
 
   .sub p {
@@ -105,6 +141,8 @@
   }
 
   .from {
+    grid-area: from;
+    align-self: start;
     font-size: 10px;
     text-transform: uppercase;
     color: var(--ink);
@@ -114,9 +152,42 @@
     content: '→ ';
   }
 
+  /* On a computer it stands at the right of the name and what the tool does. */
   @media (min-width: 760px) {
+    .head {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: 'crumbs plate' 'title plate' 'sub plate' 'from plate';
+      grid-template-rows: auto auto auto 1fr;
+      column-gap: 32px;
+    }
+
     h1 {
+      margin-bottom: 0;
       font-size: 54px;
+    }
+
+    .sub {
+      flex-direction: row;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 0;
+    }
+
+    .plate-at :global(.specimen) {
+      width: 208px;
+      --ow: 1.3;
+      --cw: 0.6;
+      --af: 7.6px;
+      --kf: 8.2px;
+    }
+
+    .plate-at :global(.specimen .cap) {
+      padding: 6px 10px 7px;
+    }
+
+    .plate-at :global(.specimen .sh) {
+      display: block;
     }
   }
 </style>

@@ -1,0 +1,6 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <path class="tint cx-hd" d="M7 16.5V10.5a1.5 1.5 0 0 1 1.5-1.5h31a1.5 1.5 0 0 1 1.5 1.5v6Z"/>
+  <rect x="7" y="9" width="34" height="30" rx="1.5"/>
+  <path d="M7 16.5h34"/><path class="s2" d="M7 24h34M7 31.5h34"/>
+  <path class="cx-c dr" style="--i:0" pathLength="1" d="M18.5 9v30"/><path class="cx-c dr" style="--i:1" pathLength="1" d="M30 9v30"/>
+</svg>

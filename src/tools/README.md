@@ -9,6 +9,10 @@ the page head all come from the catalog. **Shrink a photo (`shrink/`) and Percen
 ```
 src/tools/<id>/Tool.svelte     the tool (loaded only when it opens)
 src/tools/<id>/<id>.ts         its logic, with no DOM: tested in node
+src/tools/<id>/drawer.svg      its drawer's icon on the home's wall (48 grid, 2 px lines, a move in
+                               components/drawers.css)
+src/tools/<id>/plate.ts        its specimen plate in the page head (lib/plate.ts; check it with
+                               node tests/plates/sheet.mjs <id>)
 tests/tools/<id>.test.mjs      unit tests of that logic (node --test)
 tests/e2e/<id>.e2e.mjs         the tool end to end in a browser with real files
 ```

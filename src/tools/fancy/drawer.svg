@@ -1,0 +1,7 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <g class="fx-g fx-0"><path d="M11.5 37c3.6-.6 7.8-8 10.6-14.6C24.6 16.5 26.6 11 28.2 11c1.3 0 1 7.2 1.3 13.6.3 6.2 1 11.6 3.3 11.8 1.4.1 2.6-1 3.3-2"/><path d="M16 27.8c4.8-1.5 10.6-1.9 16.8-1.4"/></g>
+  <g class="fx-g fx-1"><path class="b2" d="M15.5 36.5L24 12.5l8.5 24M18.8 29h10.4"/></g>
+  <g class="fx-g fx-2"><path d="M15 37L24 11l9 26M18.6 28.5h10.8M18.6 37l6.9-19.6"/></g>
+  <g class="fx-g fx-3"><g transform="rotate(180 24 24)"><path d="M15 37L24 11l9 26M18.6 28.5h10.8"/></g></g>
+  <path class="fx-spark" d="M38.5 6.5q0 4 4 4q-4 0-4 4q0-4-4-4q4 0 4-4Z"/>
+</svg>

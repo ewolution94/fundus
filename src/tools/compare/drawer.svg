@@ -1,0 +1,6 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <rect class="tint cp-h" x="7.5" y="18.4" width="11.5" height="5.2" rx="1"/><rect class="tint cp-h" x="29.5" y="18.4" width="11.5" height="5.2" rx="1"/>
+  <rect x="5" y="9" width="16" height="30" rx="1.5"/><rect x="27" y="9" width="16" height="30" rx="1.5"/>
+  <path d="M9 15h8M9 21h4.5M9 27h8M9 33h6M31 15h8M31 21h8M31 27h8M31 33h6"/>
+  <path class="s2 cp-scan" d="M3 11h42"/>
+</svg>

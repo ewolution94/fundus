@@ -1,0 +1,5 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <rect x="5" y="15" width="38" height="18" rx="2"/>
+  <path class="pw-s" style="--i:0" d="M11.5 21.2v5.6M9.08 22.6l4.85 2.8M9.08 25.4l4.85-2.8"/><path class="pw-s" style="--i:1" d="M18.5 21.2v5.6M16.08 22.6l4.85 2.8M16.08 25.4l4.85-2.8"/><path class="pw-s" style="--i:2" d="M25.5 21.2v5.6M23.08 22.6l4.85 2.8M23.08 25.4l4.85-2.8"/><path class="pw-s" style="--i:3" d="M32.5 21.2v5.6M30.08 22.6l4.85 2.8M30.08 25.4l4.85-2.8"/>
+  <path class="pw-c" d="M38.5 19.5v9"/>
+</svg>

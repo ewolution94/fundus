@@ -1,0 +1,4 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <g class="ca-arr"><path d="M8.55 19.86A16 16 0 0 1 37.11 14.82M37.05 9.82L37.11 14.82L32.43 13.06"/><path d="M39.45 28.14A16 16 0 0 1 10.89 33.18M10.95 38.18L10.89 33.18L15.57 34.94"/></g>
+  <path class="ns ca-b" style="--i:0" d="M17 21.5v5"/><path class="ns ca-b" style="--i:1" d="M20.5 19v10"/><path class="ns ca-b" style="--i:2" d="M24 16.5v15"/><path class="ns ca-b" style="--i:3" d="M27.5 20v8"/><path class="ns ca-b" style="--i:4" d="M31 22v4"/>
+</svg>

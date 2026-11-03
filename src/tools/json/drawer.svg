@@ -1,0 +1,7 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <g class="js-br"><path class="ns" d="M13 9c-1.8 0 -2.4 .8 -2.4 2.4v10.6c0 1.4 -0.5 2.1 -1.6 2 1.1 -.1 1.6 .6 1.6 2v10.6c0 1.6 0.6 2.4 2.4 2.4"/><path class="ns" d="M35 9c1.8 0 2.4 .8 2.4 2.4v10.6c0 1.4 0.5 2.1 1.6 2 -1.1 -.1 -1.6 .6 -1.6 2v10.6c0 1.6 -0.6 2.4 -2.4 2.4"/></g>
+  <path class="js-l" style="--i:0;--mx:0px;--my:8px" d="M17 16h10"/>
+  <path class="js-l" style="--i:1;--mx:-4px;--my:3px" d="M21 21h10"/>
+  <path class="js-l" style="--i:2;--mx:-4px;--my:-3px" d="M21 27h8"/>
+  <path class="js-l" style="--i:3;--mx:0px;--my:-8px" d="M17 32h6"/>
+</svg>

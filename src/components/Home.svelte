@@ -5,10 +5,13 @@
   2. Detection: drop, paste or pick something anywhere on the page, and the tools that take it come
      first, each with its reason.
   3. Yours: pinned and recent tools on top.
-  Then every tool as an article: number, figure, name, what it takes and gives.
+  Then every tool as an article: number, figure, name, what it takes and gives; or, with the view
+  switched to the wall, as a drawer with a large icon that does its job when pointed at (Drawers.svelte,
+  loaded only then).
 -->
 <script lang="ts">
-  import { ArrowRight, X } from '@lucide/svelte';
+  import type { Component } from 'svelte';
+  import { ArrowRight, LayoutGrid, List, X } from '@lucide/svelte';
   import DropWell from './kit/DropWell.svelte';
   import FileRow from './kit/FileRow.svelte';
   import { CHIPS, TOOLS, listed, articleNo, href, toolById, type Tool } from '../lib/catalog.ts';
@@ -16,7 +19,7 @@
   import { inbox, fromTransfer, type Item } from '../lib/inbox.svelte.ts';
   import { suggest, type Suggestion } from '../lib/detect.ts';
   import { yours } from '../lib/memory.svelte.ts';
-  import { ui } from '../lib/prefs.svelte.ts';
+  import { prefs, ui } from '../lib/prefs.svelte.ts';
   import { go, nav } from '../lib/router.svelte.ts';
   import { shared } from '../lib/settings.svelte.ts';
   import { pick, t, locale } from '../lib/i18n.svelte.ts';
@@ -26,6 +29,12 @@
   const chips = $derived(CHIPS.filter((c) => c.id !== 'dev' || shared.dev));
   const count = (chip: string) => (chip === 'all' ? tools.length : tools.filter((t) => t.chip === chip).length);
   const groups = $derived(chips.filter((c) => ui.chip === 'all' || ui.chip === c.id).map((c) => ({ chip: c, tools: tools.filter((t) => t.chip === c.id) })));
+
+  let Drawers = $state<Component<{ tools: Tool[] }> | null>(null);
+  $effect(() => {
+    if (prefs.view === 'wall' && !Drawers) import('./Drawers.svelte').then((m) => (Drawers = m.default));
+  });
+  const shown = $derived(groups.reduce((n, g) => n + g.tools.length, 0));
 
   let suggestions = $state<Suggestion[]>([]);
   let thumbs = $state<Record<number, string>>({});
@@ -148,22 +157,34 @@
       </section>
     {/if}
 
+    <div class="viewbar">
+      <span class="n">{t('home.tools', { n: shown })}</span>
+      <div class="switch m" role="group" aria-label={t('home.view')}>
+        <button type="button" aria-pressed={prefs.view === 'list'} onclick={() => (prefs.view = 'list')}><List aria-hidden="true" />{t('home.list')}</button>
+        <button type="button" aria-pressed={prefs.view === 'wall'} onclick={() => (prefs.view = 'wall')}><LayoutGrid aria-hidden="true" />{t('home.wall')}</button>
+      </div>
+    </div>
+
     {#each groups as g (g.chip.id)}
       <section class="sec" aria-labelledby={`chip-${g.chip.id}`}>
         <h2 class="h" id={`chip-${g.chip.id}`}><code class="m">{g.chip.no}</code>{pick(g.chip.name)}<em>{t('home.tools', { n: g.tools.length })}</em></h2>
-        <div class="thead m" aria-hidden="true">
-          <span>{t('home.thead.no')}</span><span>{t('home.thead.fig')}</span><span>{t('home.thead.tool')}</span><span>{t('home.thead.io')}</span><span></span>
-        </div>
-        {#each g.tools as tool (tool.id)}
-          {@const Icon = iconFor(tool.id)}
-          <a class="row" href={href(tool)} onclick={nav}>
-            <code class="no m">{articleNo(tool)}</code>
-            <span class="fig"><Icon aria-hidden="true" /></span>
-            <span class="name"><b>{pick(tool.name)}</b><small>{pick(tool.desc)}</small></span>
-            <span class="io m">{pick(tool.takes)} → {pick(tool.gives)}</span>
-            <span class="go"><ArrowRight aria-hidden="true" /></span>
-          </a>
-        {/each}
+        {#if prefs.view === 'wall'}
+          {#if Drawers}<Drawers tools={g.tools} />{/if}
+        {:else}
+          <div class="thead m" aria-hidden="true">
+            <span>{t('home.thead.no')}</span><span>{t('home.thead.fig')}</span><span>{t('home.thead.tool')}</span><span>{t('home.thead.io')}</span><span></span>
+          </div>
+          {#each g.tools as tool (tool.id)}
+            {@const Icon = iconFor(tool.id)}
+            <a class="row" href={href(tool)} onclick={nav}>
+              <code class="no m">{articleNo(tool)}</code>
+              <span class="fig"><Icon aria-hidden="true" /></span>
+              <span class="name"><b>{pick(tool.name)}</b><small>{pick(tool.desc)}</small></span>
+              <span class="io m">{pick(tool.takes)} → {pick(tool.gives)}</span>
+              <span class="go"><ArrowRight aria-hidden="true" /></span>
+            </a>
+          {/each}
+        {/if}
       </section>
     {/each}
 
@@ -272,6 +293,52 @@
 
   .thead {
     display: none;
+  }
+
+  /* The view: the list or the wall, kept on this device. */
+  .viewbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px var(--gutter) 0;
+  }
+
+  .viewbar .n {
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+
+  .switch {
+    display: flex;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+  }
+
+  .switch button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .switch button[aria-pressed='true'] {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .switch :global(svg) {
+    width: 13px;
+    height: 13px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .switch button[aria-pressed='false']:hover {
+      background: var(--card);
+    }
   }
 
   .row {

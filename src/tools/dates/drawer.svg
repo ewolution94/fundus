@@ -1,0 +1,5 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <rect x="7" y="10" width="34" height="30" rx="2"/><path d="M16 7v6M32 7v6M7 17h34"/>
+  <g class="f"><circle cx="12.5" cy="23" r="1.2"/><circle cx="18.25" cy="23" r="1.2"/><circle cx="24" cy="23" r="1.2"/><circle cx="29.75" cy="23" r="1.2"/><circle cx="35.5" cy="23" r="1.2"/><circle cx="12.5" cy="28.5" r="1.2"/><circle cx="18.25" cy="28.5" r="1.2"/><circle cx="24" cy="28.5" r="1.2"/><circle cx="29.75" cy="28.5" r="1.2"/><circle cx="35.5" cy="28.5" r="1.2"/><circle cx="12.5" cy="34" r="1.2"/><circle cx="18.25" cy="34" r="1.2"/><circle cx="24" cy="34" r="1.2"/><circle cx="29.75" cy="34" r="1.2"/><circle cx="35.5" cy="34" r="1.2"/></g>
+  <circle cx="12.5" cy="23" r="3.3"/><circle class="dw-e" cx="29.75" cy="34" r="3.3"/>
+</svg>

@@ -1,14 +1,17 @@
-// This device's language pick (the theme lives in theme.svelte.ts, which boot.js mirrors before first
-// paint; the shared settings every tool reads are in settings.svelte.ts), and what's open right now.
+// This device's language pick and the home's view (the theme lives in theme.svelte.ts, which boot.js
+// mirrors before first paint; the shared settings every tool reads are in settings.svelte.ts), and
+// what's open right now.
 
 export type Language = 'system' | 'en' | 'de';
 
 interface Prefs {
   language: Language;
+  /** The home's tools as the list or the wall of drawers. */
+  view: 'list' | 'wall';
 }
 
 const KEY = 'fundus:prefs';
-const DEFAULTS: Prefs = { language: 'system' };
+const DEFAULTS: Prefs = { language: 'system', view: 'list' };
 
 function load(): Prefs {
   try {

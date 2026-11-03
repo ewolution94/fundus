@@ -1,0 +1,5 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <circle cx="21" cy="21" r="14"/><path d="M7 21h28"/>
+  <ellipse class="ns tz-0" cx="21" cy="21" rx="14" ry="14"/><ellipse class="ns tz-1" cx="21" cy="21" rx="14" ry="14"/><ellipse class="ns tz-2" cx="21" cy="21" rx="14" ry="14"/>
+  <circle class="o" cx="34.5" cy="34.5" r="8.5"/><path class="tz-h" d="M34.5 34.5v-5"/><path d="M34.5 34.5h3.2"/>
+</svg>

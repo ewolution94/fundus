@@ -1,0 +1,5 @@
+<svg class="i" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <rect x="7" y="7" width="34" height="34" rx="1.5"/>
+  <circle cx="31.5" cy="21" r="2.1"/><path d="M7.6 29.5l8-7.5 6 5.5 4-3.5 6.5 5.5"/>
+  <g class="mm-cap"><path class="mm-w" style="--i:0" d="M12.5 12.5h9"/><path class="mm-w" style="--i:1" d="M26 12.5h9.5"/><path class="mm-w" style="--i:3" d="M11.5 35.5h13"/><path class="mm-w" style="--i:4" d="M28.5 35.5h8"/></g>
+</svg>
