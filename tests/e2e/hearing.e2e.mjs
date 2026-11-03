@@ -3,6 +3,8 @@
 // readout climbs, Gone records where it was, three runs give the median, a run that reaches the top,
 // Space, the tone generator's Play and Stop, presets, the slider, the gain's ceiling, a phone.
 
+import { topFor } from '../../src/tools/hearing/hearing.ts';
+
 const NOW = new Date('2026-11-02T09:00:00Z');
 const readout = async (page) => Number(await page.locator('[data-live]').getAttribute('data-live'));
 const runs = (page, ear) => page.locator(`[data-result="${ear}"] [data-run]`).evaluateAll((els) => els.map((el) => Number(el.getAttribute('data-run'))));
@@ -100,7 +102,9 @@ export default {
     await page.clock.runFor(20_000);
     await page.getByRole('button', { name: 'Start run 2 of 3' }).waitFor();
     const top = Number(await page.locator('[data-result="right"] [data-run]').getAttribute('data-run'));
-    assert.ok(top >= 15000 && top <= 22000, `the device's top: ${top}`);
+    // A Bluetooth headset in call mode plays at 16 kHz, so its top is 7,600 Hz, not 22,000.
+    const rate = await page.evaluate(() => new AudioContext().sampleRate);
+    assert.equal(top, topFor(rate), `the device's top at ${rate} Hz`);
     // Space says Gone, and doesn't start the next run as well.
     await page.getByRole('button', { name: 'Start run 2 of 3' }).focus();
     await page.keyboard.press('Space');
