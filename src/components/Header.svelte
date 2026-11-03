@@ -1,19 +1,35 @@
 <!--
-  The sticky header: Fundus and its count, the search, and Settings. Nothing else (the family's rule:
-  the header carries only the primary actions). While searching on a phone the field takes the bar.
+  The sticky header: away from the home, the way back to all the tools; Fundus and its count, the
+  search, and Settings. Nothing else (the family's rule: the header carries only the primary actions).
+  While searching on a phone the field takes the bar.
 -->
 <script lang="ts">
-  import { Search as SearchIcon } from '@lucide/svelte';
+  import { ArrowLeft, Search as SearchIcon } from '@lucide/svelte';
   import Search from './Search.svelte';
   import { ui } from '../lib/prefs.svelte.ts';
   import { listed } from '../lib/catalog.ts';
   import { t } from '../lib/i18n.svelte.ts';
-  import { nav } from '../lib/router.svelte.ts';
+  import { home, nav, route } from '../lib/router.svelte.ts';
 
   const count = $derived(listed().length);
+  const away = $derived(route.path !== '/' && route.path !== '');
+
+  // A plain click goes back in the page; a modified one opens the home in a tab, as a link does.
+  function back(e: MouseEvent) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    home();
+  }
 </script>
 
 <header class="top" class:searching={ui.search}>
+  {#if away}
+    <a class="back" href="/" onclick={back} aria-label={t('nav.back')}>
+      <ArrowLeft aria-hidden="true" />
+      <span>{t('nav.back')}</span>
+      <kbd>Esc</kbd>
+    </a>
+  {/if}
   <a class="brand" href="/" onclick={nav}>
     <b>Fundus</b>
     <span>{t('brand.line', { n: count })}</span>
@@ -70,7 +86,8 @@
     white-space: nowrap;
   }
 
-  .find {
+  .find,
+  .back {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -84,13 +101,20 @@
     font-size: 14px;
   }
 
-  .find :global(svg) {
+  .back {
+    text-decoration: none;
+  }
+
+  .find :global(svg),
+  .back :global(svg) {
     width: 18px;
     height: 18px;
   }
 
   .find span,
-  .find kbd {
+  .find kbd,
+  .back span,
+  .back kbd {
     display: none;
   }
 
@@ -103,6 +127,7 @@
     color: var(--ink);
   }
 
+  .searching .back,
   .searching .brand,
   .searching .gear {
     display: none;
@@ -131,7 +156,17 @@
       text-align: left;
     }
 
-    .find kbd {
+    .back {
+      padding: 0 12px;
+    }
+
+    .back span {
+      display: inline;
+      font-weight: 600;
+    }
+
+    .find kbd,
+    .back kbd {
       display: inline;
       font-family: var(--mono);
       font-size: 10px;
@@ -142,6 +177,10 @@
     .searching .brand,
     .searching .gear {
       display: grid;
+    }
+
+    .searching .back {
+      display: flex;
     }
   }
 </style>

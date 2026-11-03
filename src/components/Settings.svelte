@@ -7,7 +7,7 @@
   import Seg from './kit/Seg.svelte';
   import Check from './kit/Check.svelte';
   import UsedBy from './kit/UsedBy.svelte';
-  import { ui, type Language } from '../lib/prefs.svelte.ts';
+  import { ui, type Language, type View } from '../lib/prefs.svelte.ts';
   import { theme, type ThemePreference } from '../lib/theme.svelte.ts';
   import { prefs } from '../lib/prefs.svelte.ts';
   import { setLanguage, t } from '../lib/i18n.svelte.ts';
@@ -187,6 +187,18 @@
 
     <section>
       <h3 class="h">{t('settings.shelf')}</h3>
+      <div class="set">
+        <div class="l"><b>{t('set.view')}</b><small>{t('set.view.hint')}</small></div>
+        <Seg
+          label={t('set.view')}
+          value={prefs.view}
+          options={[
+            { value: 'list', label: t('home.list') },
+            { value: 'wall', label: t('home.wall') },
+          ] as { value: View; label: string }[]}
+          onchange={(v) => (prefs.view = ui.view = v)}
+        />
+      </div>
       <div class="set">
         <Check checked={shared.dev} label={t('set.dev')} hint={t('set.dev.hint')} onchange={(v) => (shared.dev = v)} />
         <UsedBy tools={TOOLS.filter((tool) => tool.chip === 'dev')} />

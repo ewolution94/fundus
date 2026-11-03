@@ -7,19 +7,26 @@
   3. Yours: pinned and recent tools on top.
   Then every tool as an article: number, figure, name, what it takes and gives; or, with the view
   switched to the wall, as a drawer with a large icon that does its job when pointed at (Drawers.svelte,
-  loaded only then).
+  loaded only then). The switch holds for this visit; Settings picks the view Fundus opens on.
 -->
-<script lang="ts">
+<script module lang="ts">
   import type { Component } from 'svelte';
+  import type { Tool } from '../lib/catalog.ts';
+
+  // Kept once loaded, so the home comes back with its wall at once (and at the place it was left).
+  let loaded: Component<{ tools: Tool[] }> | null = null;
+</script>
+
+<script lang="ts">
   import { ArrowRight, LayoutGrid, List, X } from '@lucide/svelte';
   import DropWell from './kit/DropWell.svelte';
   import FileRow from './kit/FileRow.svelte';
-  import { CHIPS, TOOLS, listed, articleNo, href, toolById, type Tool } from '../lib/catalog.ts';
+  import { CHIPS, TOOLS, listed, articleNo, href, toolById } from '../lib/catalog.ts';
   import { CHIP_ICONS, iconFor } from '../lib/icons.ts';
   import { inbox, fromTransfer, type Item } from '../lib/inbox.svelte.ts';
   import { suggest, type Suggestion } from '../lib/detect.ts';
   import { yours } from '../lib/memory.svelte.ts';
-  import { prefs, ui } from '../lib/prefs.svelte.ts';
+  import { ui } from '../lib/prefs.svelte.ts';
   import { go, nav } from '../lib/router.svelte.ts';
   import { shared } from '../lib/settings.svelte.ts';
   import { pick, t, locale } from '../lib/i18n.svelte.ts';
@@ -30,9 +37,9 @@
   const count = (chip: string) => (chip === 'all' ? tools.length : tools.filter((t) => t.chip === chip).length);
   const groups = $derived(chips.filter((c) => ui.chip === 'all' || ui.chip === c.id).map((c) => ({ chip: c, tools: tools.filter((t) => t.chip === c.id) })));
 
-  let Drawers = $state<Component<{ tools: Tool[] }> | null>(null);
+  let Drawers = $state(loaded);
   $effect(() => {
-    if (prefs.view === 'wall' && !Drawers) import('./Drawers.svelte').then((m) => (Drawers = m.default));
+    if (ui.view === 'wall' && !Drawers) import('./Drawers.svelte').then((m) => (Drawers = loaded = m.default));
   });
   const shown = $derived(groups.reduce((n, g) => n + g.tools.length, 0));
 
@@ -160,15 +167,15 @@
     <div class="viewbar">
       <span class="n">{t('home.tools', { n: shown })}</span>
       <div class="switch m" role="group" aria-label={t('home.view')}>
-        <button type="button" aria-pressed={prefs.view === 'list'} onclick={() => (prefs.view = 'list')}><List aria-hidden="true" />{t('home.list')}</button>
-        <button type="button" aria-pressed={prefs.view === 'wall'} onclick={() => (prefs.view = 'wall')}><LayoutGrid aria-hidden="true" />{t('home.wall')}</button>
+        <button type="button" aria-pressed={ui.view === 'list'} onclick={() => (ui.view = 'list')}><List aria-hidden="true" />{t('home.list')}</button>
+        <button type="button" aria-pressed={ui.view === 'wall'} onclick={() => (ui.view = 'wall')}><LayoutGrid aria-hidden="true" />{t('home.wall')}</button>
       </div>
     </div>
 
     {#each groups as g (g.chip.id)}
       <section class="sec" aria-labelledby={`chip-${g.chip.id}`}>
         <h2 class="h" id={`chip-${g.chip.id}`}><code class="m">{g.chip.no}</code>{pick(g.chip.name)}<em>{t('home.tools', { n: g.tools.length })}</em></h2>
-        {#if prefs.view === 'wall'}
+        {#if ui.view === 'wall'}
           {#if Drawers}<Drawers tools={g.tools} />{/if}
         {:else}
           <div class="thead m" aria-hidden="true">
@@ -295,7 +302,7 @@
     display: none;
   }
 
-  /* The view: the list or the wall, kept on this device. */
+  /* The view: the list or the wall, for this visit. */
   .viewbar {
     display: flex;
     align-items: center;

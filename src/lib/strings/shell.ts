@@ -3,6 +3,7 @@
 const en = {
   'brand.line': '{n} tools · all on this device',
   'search.label': 'Search the tools',
+  'nav.back': 'All tools',
   'search.placeholder': 'Find a tool: a name, a word, a number',
   'search.short': 'Search',
   'search.cancel': 'Cancel',
@@ -111,6 +112,8 @@ const en = {
   'set.csv.hint': 'Follows the decimal mark',
   'set.csv.semicolon': 'Semicolon ;',
   'set.csv.comma': 'Comma ,',
+  'set.view': 'Opening view',
+  'set.view.hint': 'The switch over the tools changes it for one visit',
   'set.dev': 'Developer tools',
   'set.dev.hint': 'JSON, YAML, JWTs, regex, Base64, hashes and more: a seventh chip',
   'set.offline': 'Everything offline',
@@ -135,6 +138,7 @@ const en = {
 const de: Partial<Record<keyof typeof en, string>> = {
   'brand.line': '{n} Werkzeuge · alle auf diesem Gerät',
   'search.label': 'Werkzeuge durchsuchen',
+  'nav.back': 'Alle Werkzeuge',
   'search.placeholder': 'Werkzeug finden: Name, Wort, Nummer',
   'search.short': 'Suchen',
   'search.cancel': 'Abbrechen',
@@ -243,6 +247,8 @@ const de: Partial<Record<keyof typeof en, string>> = {
   'set.csv.hint': 'Folgt dem Dezimalzeichen',
   'set.csv.semicolon': 'Semikolon ;',
   'set.csv.comma': 'Komma ,',
+  'set.view': 'Ansicht beim Öffnen',
+  'set.view.hint': 'Der Schalter über den Werkzeugen ändert sie für einen Besuch',
   'set.dev': 'Entwicklerwerkzeuge',
   'set.dev.hint': 'JSON, YAML, JWTs, Regex, Base64, Hashes und mehr: ein siebter Chip',
   'set.offline': 'Alles offline',

@@ -4,7 +4,7 @@
   import ToolPage from './components/ToolPage.svelte';
   import Settings from './components/Settings.svelte';
   import Licences from './components/Licences.svelte';
-  import { route, go, nav } from './lib/router.svelte.ts';
+  import { route, go, home, nav } from './lib/router.svelte.ts';
   import { toolByPath } from './lib/catalog.ts';
   import { ui } from './lib/prefs.svelte.ts';
   import { inbox, arrivals } from './lib/inbox.svelte.ts';
@@ -39,7 +39,7 @@
       e.preventDefault();
       ui.settings = true;
     } else if (e.key === 'Escape' && page !== 'home' && !ui.search) {
-      go('/');
+      home();
     }
   }
 </script>

@@ -1,5 +1,5 @@
 // The home's other view, the wall of drawers, and each tool's specimen plate in its head: the switch
-// and that it stays, every tool's drawer and plate, a drawer's play (hover, the flip clock's other
+// for a visit and the setting for the view Fundus opens on, every tool's drawer and plate, a drawer's play (hover, the flip clock's other
 // side, reduced motion, a phone's scroll), the plate drawn on when a tool opens, where it sits on a
 // computer and on a phone, German.
 
@@ -18,20 +18,41 @@ const drawer = (page, id) => page.locator(`[data-drawer="${id}"]`);
 const settled = (page, id) => page.waitForFunction((id) => !document.querySelector(`[data-drawer="${id}"]`).classList.contains('play'), id, { timeout: 4000 });
 
 export default {
-  'the switch puts the tools on the wall, and it stays': async (t) => {
+  'the switch changes the view for this visit; Settings picks the one Fundus opens on': async (t) => {
     const { page, assert } = t;
+    const drawers = page.locator('[data-drawer]');
+    const rows = page.locator('a.row');
     await t.open('/');
-    const rows = await page.locator('a.row').count();
+    const n = await rows.count();
     await page.getByRole('button', { name: 'Wall' }).click();
-    await page.locator('[data-drawer]').first().waitFor();
-    assert.equal(await page.locator('[data-drawer]').count(), rows, 'a drawer for every row');
-    assert.equal(await page.locator('a.row').count(), 0);
+    await drawers.first().waitFor();
+    assert.equal(await drawers.count(), n, 'a drawer for every row');
+    assert.equal(await rows.count(), 0);
     assert.equal(await page.getByRole('button', { name: 'Wall' }).getAttribute('aria-pressed'), 'true');
+    // Into a tool and back: still the wall.
+    await drawer(page, 'count').click();
+    await page.waitForSelector('main[data-ready]');
+    await page.goBack();
+    await drawers.first().waitFor();
+    // Opened again: the list, the view it opens on until Settings says otherwise.
     await page.reload();
-    await page.locator('[data-drawer]').first().waitFor();
+    await rows.first().waitFor();
+    assert.equal(await drawers.count(), 0);
+
+    // Settings: open on the wall. The home behind the sheet changes at once.
+    await page.keyboard.press(',');
+    const setting = page.getByRole('radiogroup', { name: 'Opening view' });
+    assert.equal(await setting.getByRole('radio', { name: 'List' }).getAttribute('aria-checked'), 'true');
+    await setting.getByRole('radio', { name: 'Wall' }).click();
+    await page.screenshot({ path: 'test-results/wall-setting.png' });
+    await page.keyboard.press('Escape');
+    await drawers.first().waitFor();
+    // The switch still changes it for the visit; opened again, it's the wall.
     await page.getByRole('button', { name: 'List' }).click();
-    assert.equal(await page.locator('[data-drawer]').count(), 0);
-    assert.equal(await page.locator('a.row').count(), rows);
+    await rows.first().waitFor();
+    await page.reload();
+    await drawers.first().waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Wall' }).getAttribute('aria-pressed'), 'true');
   },
 
   'every tool has its drawer, and the shelves close with empty ones': async (t) => {
