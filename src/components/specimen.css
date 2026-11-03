@@ -58,7 +58,7 @@
   margin-left: -4px;
   padding: 0 4px;
   color: var(--ink-2);
-  background: linear-gradient(177deg, transparent 10%, var(--mark) 10% 88%, transparent 88%) no-repeat 0 0 / 0% 100%;
+  background: var(--hl) no-repeat 0 0 / 0% 100%;
   transition:
     background-size 0.2s ease-out,
     color 0.2s;
