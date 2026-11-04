@@ -58,6 +58,8 @@
     gap: 8px;
     padding: 12px var(--gutter);
     padding-top: max(12px, env(safe-area-inset-top));
+    /* The bar and its rule run the screen's width; what's on it keeps to the group. */
+    padding-inline: max(var(--gutter), (100% - var(--group)) / 2);
     background: var(--bg);
     border-bottom: 2px solid var(--ink);
   }

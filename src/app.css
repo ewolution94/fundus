@@ -32,6 +32,9 @@
   --sans: 'Schibsted Grotesk Variable', 'Helvetica Neue', Arial, sans-serif;
   --mono: 'Martian Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
   --gutter: 16px;
+  /* A 1080p screen's width: wider than that, what you use keeps together in the middle (as in
+     Pitcher). The pages' own columns are narrower still. */
+  --group: 1920px;
 
   /* Folio's elements (sheet, switch, toaster) in Fundus's colours. */
   --ewo-bg: var(--bg);
