@@ -1,7 +1,7 @@
 <!--
   A tool's head on its spec sheet: the crumbs (the way back, the tool's shelf, F-102), the name big,
-  what it does, the pin, and the tool's specimen plate beside them (at the right on a computer, beside
-  the line under the name on a phone). A result handed on from another tool says where it came from.
+  what it does, the pin, and the tool's specimen plate at the right of them (smaller on a phone, like a
+  stamp). A result handed on from another tool says where it came from.
 -->
 <script lang="ts">
   import { Pin, PinOff } from '@lucide/svelte';
@@ -54,13 +54,14 @@
 </header>
 
 <style>
-  /* On a phone the plate sits beside the line under the name, which stacks the pin under it. */
+  /* On a phone the plate stands at the right of the name and what the tool does, like a stamp; the
+     pin goes under the words (the user's pick, 2026-11-04). */
   .head {
     display: grid;
-    grid-template-columns: 152px minmax(0, 1fr);
-    grid-template-areas: 'crumbs crumbs' 'title title' 'plate sub' 'plate from';
-    grid-template-rows: auto auto auto 1fr;
-    column-gap: 14px;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    grid-template-areas: 'crumbs crumbs' 'title plate' 'sub plate' 'from from';
+    grid-template-rows: auto auto 1fr auto;
+    column-gap: 16px;
     row-gap: 6px;
     min-width: 0;
   }
@@ -86,10 +87,15 @@
     color: var(--ink);
   }
 
+  /* Beside the plate on a phone the longest words ("unterschreiben", "Zahlensysteme") don't fit at
+     390 px: they break with a hyphen where the language allows (`<html lang>` follows the setting),
+     and a narrower phone sets the name a little smaller. */
   h1 {
     grid-area: title;
-    margin-bottom: 4px;
-    font-size: 36px;
+    font-size: clamp(28px, 9.25vw, 36px);
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    hyphenate-limit-chars: 6 3 3;
     font-weight: 800;
     letter-spacing: -0.04em;
     line-height: 1;
@@ -108,18 +114,26 @@
   .plate-at {
     grid-area: plate;
     align-self: start;
+    margin-top: 2px;
   }
 
+  /* Smaller, so its strokes are drawn heavier to read the same; the notes keep their size on the
+     plate, or the longest ones ("ANTON", "ZEICHNEN") run off it. */
   .plate-at :global(.specimen) {
-    width: 152px;
-    --ow: 1.6;
-    --cw: 0.75;
+    width: 104px;
+    --ow: 2;
+    --cw: 0.94;
     --af: 9.6px;
     --kf: 10.2px;
   }
 
   .plate-at :global(.specimen .cap) {
-    padding: 4px 7px 5px;
+    padding: 2px 6px 3px;
+  }
+
+  .plate-at :global(.specimen .no) {
+    font-size: 9px;
+    line-height: 14px;
   }
 
   .plate-at :global(.specimen .sh) {
@@ -174,7 +188,6 @@
     }
 
     h1 {
-      margin-bottom: 0;
       font-size: 54px;
     }
 
@@ -194,8 +207,17 @@
       --kf: 8.2px;
     }
 
+    .plate-at {
+      margin-top: 0;
+    }
+
     .plate-at :global(.specimen .cap) {
       padding: 6px 10px 7px;
+    }
+
+    .plate-at :global(.specimen .no) {
+      font-size: 10px;
+      line-height: 16px;
     }
 
     .plate-at :global(.specimen .sh) {

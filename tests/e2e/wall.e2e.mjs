@@ -1,7 +1,7 @@
 // The home's other view, the wall of drawers, and each tool's specimen plate in its head: the switch
 // for a visit and the setting for the view Fundus opens on, every tool's drawer and plate, a drawer's play (hover, the flip clock's other
 // side, reduced motion, a phone's scroll), the plate drawn on when a tool opens, where it sits on a
-// computer and on a phone, German.
+// computer and on a phone (beside the name, smaller, since 2026-11-04), German.
 
 const wall = async (t, { dev = false, lang = 'en' } = {}) => {
   await t.page.addInitScript(
@@ -148,7 +148,7 @@ export default {
     await page.waitForSelector('.specimen .fig:not(.drawing)', { timeout: 3000 });
   },
 
-  'the plate stands right of the name on a computer, beside the line under it on a phone': async (t) => {
+  'the plate stands right of the name, on a computer and smaller on a phone': async (t) => {
     const { page, assert } = t;
     await t.open('/shrink-a-photo');
     await page.locator('.specimen svg path').first().waitFor({ state: 'attached' });
@@ -162,10 +162,10 @@ export default {
     await page.setViewportSize({ width: 390, height: 844 });
     [h1, plate] = [await page.locator('h1').boundingBox(), await page.locator('.specimen').boundingBox()];
     const sub = await page.locator('.sub p').boundingBox();
-    assert.equal(Math.round(plate.width), 152);
-    assert.ok(plate.y > h1.y + h1.height - 1, 'under the name');
-    assert.ok(sub.x > plate.x + plate.width, 'what the tool does stands beside it');
-    assert.ok(sub.x + sub.width <= 390 - 15, 'inside the page');
+    assert.equal(Math.round(plate.width), 104);
+    assert.ok(plate.x >= h1.x + h1.width + 15 && Math.abs(plate.y - h1.y) <= 4, 'right of the name, level with it');
+    assert.ok(Math.round(plate.x + plate.width) <= 390 - 16, 'inside the page');
+    assert.ok(sub.x === h1.x && sub.x + sub.width <= plate.x, 'what the tool does under the name, left of the plate');
     await page.waitForSelector('.specimen .fig:not(.drawing)', { timeout: 3000 });
     await page.screenshot({ path: 'test-results/plate-phone.png' });
   },
