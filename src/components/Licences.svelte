@@ -19,6 +19,8 @@
     { name: 'uqr', licence: 'MIT', url: 'https://github.com/unjs/uqr', use: 'F-401: drawing QR codes' },
     { name: 'jsQR', licence: 'Apache-2.0', url: 'https://github.com/cozmo/jsQR', use: 'F-401: reading QR codes' },
     { name: 'jsdiff', licence: 'BSD-3-Clause', url: 'https://github.com/kpdecker/jsdiff', use: 'F-303: comparing texts' },
+    { name: 'Emojibase (emojibase-data)', licence: 'MIT', url: 'https://github.com/milesj/emojibase', use: 'F-309: the emoji with their names and keywords in English and German, and GitHub’s shortcodes' },
+    { name: 'Unicode emoji data and CLDR annotations', licence: 'Unicode-3.0', url: 'https://www.unicode.org/license.txt', use: 'F-309: the emoji, their order and their names, by way of Emojibase' },
     { name: 'EFF large wordlist', licence: 'CC BY 3.0 US', url: 'https://www.eff.org/dice', use: 'F-402: English passphrases' },
     { name: 'German wordlist (dys2p/wordlists-de, de-7776-v1)', licence: 'CC0-1.0', url: 'https://github.com/dys2p/wordlists-de', use: 'F-402: German passphrases' },
     { name: 'Lucide', licence: 'ISC', url: 'https://github.com/lucide-icons/lucide', use: 'Icons' },

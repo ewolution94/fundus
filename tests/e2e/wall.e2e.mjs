@@ -58,7 +58,7 @@ export default {
   'every tool has its drawer, and the shelves close with empty ones': async (t) => {
     const { page, assert } = t;
     await wall(t, { dev: true });
-    assert.equal(await page.locator('[data-drawer]').count(), 49);
+    assert.equal(await page.locator('[data-drawer]').count(), 50);
     assert.equal(await page.locator('[data-drawer]:not(:has(svg.i))').count(), 0, 'each has its icon');
     // The cabinet beside the register: six a row at 1280 px, four at 1100, three on a phone.
     for (const [width, cols] of [[1280, 6], [1100, 4], [390, 3]]) {

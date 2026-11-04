@@ -226,6 +226,13 @@
 .drawers .play .tp-l { animation-name: drawer-tp; }
 @keyframes drawer-tp { 0% { transform: translateY(0); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); } 100% { transform: translateY(-15px); } }
 
+/* F-309 Emoji picker: the face tips its head and winks. */
+.drawers .t:has(.em-f) { --d: 1.2s; }
+.drawers .play .em-f { animation-name: drawer-em-f; transform-origin: 24px 25px; }
+.drawers .play .em-w { animation-name: drawer-em-w; transform-box: fill-box; transform-origin: center; }
+@keyframes drawer-em-f { 0% { transform: rotate(0); animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1); } 24%, 62% { transform: rotate(-12deg); animation-timing-function: cubic-bezier(0.3, 0, 0.25, 1.4); } 92%, 100% { transform: rotate(0); } }
+@keyframes drawer-em-w { 0%, 26% { transform: scaleY(1); } 34%, 50% { transform: scaleY(0.1); } 58%, 100% { transform: scaleY(1); } }
+
 /* F-401 QR code: the modules clear in a sweep and fill in again around the finder squares. */
 .drawers .t:has(.qr-m) { --d: 0.8s; }
 .drawers .play .qr-m { animation-name: drawer-qr; animation-delay: calc(var(--wait) + var(--i) * 30ms); transform-box: fill-box; transform-origin: center; }

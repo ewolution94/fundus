@@ -39,7 +39,7 @@ test('folds accents and German letters', () => {
 
 test('every tool has a unique id, number and address', () => {
   for (const key of ['id', 'no', 'path']) assert.equal(new Set(TOOLS.map((t) => t[key])).size, TOOLS.length, key);
-  assert.equal(TOOLS.length, 49);
+  assert.equal(TOOLS.length, 50);
 });
 
 test('knows what a pasted text is', () => {

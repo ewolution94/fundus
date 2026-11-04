@@ -3,7 +3,7 @@
 Everyday tools that run on your device: photos, PDFs, text, numbers, time and audio. Nothing you put in
 leaves it. Live at [fundus.ewolution.cloud](https://fundus.ewolution.cloud).
 
-- **A parts index.** Thirty-six tools in six shelves, each with an article number whose hundreds are
+- **A parts index.** Thirty-seven tools in six shelves, each with an article number whose hundreds are
   its shelf (F-102 Shrink a photo, F-502 Percent & VAT), what it takes and what it gives. A developer
   shelf of thirteen more (900) waits behind a switch in Settings.
 - **Drop anything on the home.** A photo, a PDF, a sound, a table, a text, a link or a number,
@@ -30,7 +30,7 @@ leaves it. Live at [fundus.ewolution.cloud](https://fundus.ewolution.cloud).
 |---|---|---|
 | F-101–110 | Convert photos, Shrink a photo, Resize & crop, Remove location, Blur parts, Photos to PDF, Make icons, Meme maker, Screenshot frame, Carousel slicer | Photo |
 | F-201–203 | Arrange a PDF, Sign a PDF, PDF to photos | PDF |
-| F-301–308 | Count words, Clean up text, Compare texts, Fix umlauts, CSV & Excel, Fancy text, Invisible characters, Teleprompter | Text |
+| F-301–309 | Count words, Clean up text, Compare texts, Fix umlauts, CSV & Excel, Fancy text, Invisible characters, Teleprompter, Emoji picker | Text |
 | F-401–404 | Make a QR code, Make a password, Colours, Coin, dice, pick one | From scratch |
 | F-501–509 | Dates & weeks, Percent & VAT, Convert units, Time zones, Split a bill, Timers, Amount in words, Life in numbers, Flip clock | Numbers & time |
 | F-601–602 | Convert audio, Hearing test | Audio |

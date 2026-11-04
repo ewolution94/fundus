@@ -251,6 +251,16 @@ export const TOOLS = [
     accepts: ['text'],
     shared: [],
   },
+  {
+    id: 'emoji', chip: 'text', no: 309, path: 'emoji-picker',
+    name: { en: 'Emoji picker', de: 'Emoji-Auswahl' },
+    desc: { en: 'Every emoji, found by a word in English or German, copied with a tap.', de: 'Jedes Emoji, gefunden über ein Wort auf Deutsch oder Englisch, kopiert mit einem Tipp.' },
+    takes: { en: 'A word', de: 'Ein Wort' },
+    gives: { en: 'Emoji · its codes', de: 'Emoji · seine Codes' },
+    words: ['emoji', 'emojis', 'emoticon', 'smiley', 'smileys', 'picker', 'auswahl', 'gesicht', 'face', 'herz', 'heart', 'daumen', 'thumbs up', 'flagge', 'flag', 'hautfarbe', 'skin tone', 'shortcode', 'unicode', 'symbol', 'kopieren', 'copy'],
+    accepts: [],
+    shared: [],
+  },
   // 400 From scratch
   {
     id: 'qr', chip: 'scratch', no: 401, path: 'qr-code',
