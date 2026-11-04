@@ -199,10 +199,11 @@ select {
 
 /* ── The tool page: a spec sheet ───────────────────────────────────────────────────────── */
 
+/* On a phone the end of the page clears the way back's button at the bottom left (WayBack). */
 .sheet {
   display: grid;
   gap: 18px;
-  padding: 18px var(--gutter) 56px;
+  padding: 18px var(--gutter) calc(96px + env(safe-area-inset-bottom, 0px));
   align-content: start;
   max-width: 1280px;
   margin-inline: auto;
@@ -221,6 +222,7 @@ select {
   .sheet {
     gap: 26px;
     padding-top: 26px;
+    padding-bottom: 56px;
   }
 
   .cols {

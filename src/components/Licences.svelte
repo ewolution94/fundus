@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import { t } from '../lib/i18n.svelte.ts';
-  import { nav } from '../lib/router.svelte.ts';
+  import WayBack from './WayBack.svelte';
 
   const LIBS = [
     { name: 'Svelte', licence: 'MIT', url: 'https://github.com/sveltejs/svelte', use: 'The page' },
@@ -34,7 +34,7 @@
 
 <main class="sheet">
   <header class="head">
-    <nav class="crumbs m"><a href="/" onclick={nav}>Fundus</a> / <span>{t('licences.title')}</span></nav>
+    <nav class="crumbs m" aria-label="Breadcrumbs"><WayBack /><span>{t('licences.title')}</span></nav>
     <h1>{t('licences.title')}</h1>
     <p class="note">{t('licences.intro')}</p>
   </header>
@@ -55,13 +55,12 @@
   }
 
   .crumbs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 10px;
     text-transform: uppercase;
     color: var(--ink-2);
-  }
-
-  .crumbs a {
-    text-decoration: none;
   }
 
   h1 {

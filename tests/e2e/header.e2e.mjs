@@ -10,9 +10,9 @@ export default {
       await t.open('/count-words');
       const [left, right, bar, over] = await page.evaluate(() => {
         const box = (s) => document.querySelector(s).getBoundingClientRect();
-        return [box('header.top a.back').left, innerWidth - box('header.top .gear').right, box('header.top').width, document.documentElement.scrollWidth - innerWidth];
+        return [box('header.top .brand').left, innerWidth - box('header.top .gear').right, box('header.top').width, document.documentElement.scrollWidth - innerWidth];
       });
-      assert.equal(Math.round(left), side, `at ${width} px the way back starts ${side} px in`);
+      assert.equal(Math.round(left), side, `at ${width} px the name starts ${side} px in`);
       assert.equal(Math.round(right), side, `at ${width} px Settings ends ${side} px in`);
       assert.equal(Math.round(bar), width, 'the bar runs the width');
       assert.equal(over, 0, 'no sideways scroll');

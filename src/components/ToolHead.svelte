@@ -1,15 +1,17 @@
 <!--
-  A tool's head on its spec sheet: the crumbs (F-102 · Photo · Shrink a photo), the name big, what it
-  does, the pin, and the tool's specimen plate beside them (at the right on a computer, beside the
-  line under the name on a phone). A result handed on from another tool says where it came from.
+  A tool's head on its spec sheet: the crumbs (the way back, the tool's shelf, F-102), the name big,
+  what it does, the pin, and the tool's specimen plate beside them (at the right on a computer, beside
+  the line under the name on a phone). A result handed on from another tool says where it came from.
 -->
 <script lang="ts">
   import { Pin, PinOff } from '@lucide/svelte';
   import { articleNo, chipOf, toolById, type Tool } from '../lib/catalog.ts';
   import { pick, t } from '../lib/i18n.svelte.ts';
   import { yours } from '../lib/memory.svelte.ts';
-  import { nav } from '../lib/router.svelte.ts';
+  import { ui } from '../lib/prefs.svelte.ts';
+  import { go } from '../lib/router.svelte.ts';
   import Specimen from './Specimen.svelte';
+  import WayBack from './WayBack.svelte';
 
   interface Props {
     tool: Tool;
@@ -20,13 +22,20 @@
   let { tool, from = null }: Props = $props();
   const pinned = $derived(yours.isPinned(tool.id));
   const source = $derived(from ? toolById(from) : null);
+
+  // The shelf opens the home on its chip; a modified click opens the whole home in a tab.
+  function shelf(e: MouseEvent) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    ui.chip = tool.chip;
+    go('/');
+  }
 </script>
 
 <header class="head">
   <nav class="crumbs m" aria-label="Breadcrumbs">
-    <a href="/" onclick={nav}>Fundus</a>
-    <span aria-hidden="true">/</span>
-    <span>{pick(chipOf(tool).name)}</span>
+    <WayBack />
+    <a class="shelf" href="/" onclick={shelf}>{pick(chipOf(tool).name)}</a>
     <span aria-hidden="true">/</span>
     <span class="cur">{articleNo(tool)}</span>
   </nav>
@@ -59,6 +68,7 @@
   .crumbs {
     grid-area: crumbs;
     display: flex;
+    align-items: center;
     gap: 6px;
     flex-wrap: wrap;
     font-size: 10px;
@@ -66,8 +76,10 @@
     text-transform: uppercase;
   }
 
-  .crumbs a {
-    text-decoration: none;
+  .shelf {
+    text-decoration: underline;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 2px;
   }
 
   .crumbs .cur {
