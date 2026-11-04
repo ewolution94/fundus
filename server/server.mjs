@@ -1,6 +1,7 @@
 // Production server: serves the built page from ../dist, each tool's address with its own title and
-// link preview (pages.mjs), and the Census forwarder. No dependencies and no state: every tool works
-// on the device, so nothing a tool is given ever reaches this server.
+// link preview (pages.mjs), and the Census forwarder, and puts Dashboard's defaults into the page
+// (Folio's config-server; the manifest is public/ewo.config.json). No dependencies and no state:
+// every tool works on the device, so nothing a tool is given ever reaches this server.
 //
 //   PORT=8080 HOST=0.0.0.0 node server/server.mjs
 //
@@ -14,6 +15,7 @@ import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { createCensus } from './census.mjs';
 import { createPages } from './pages.mjs';
+import { createConfig } from '../vendor/ewo/elements/config-server.js';
 
 const portFlag = process.argv.indexOf('--port');
 const PORT = Number(portFlag > -1 ? process.argv[portFlag + 1] : (process.env.PORT ?? 8080));
@@ -77,7 +79,20 @@ const SECURITY_HEADERS = {
 const census = createCensus({ target: process.env.FUNDUS_CENSUS ?? '', site: 'fundus' });
 const pages = createPages({ origin: ORIGIN });
 const compressed = new Map();
-let template = null;
+
+// Dashboard's values for Fundus (the language and theme a device that hasn't picked starts from),
+// checked against the manifest. Until Dashboard answers, and whenever it's down, the built-in ones:
+// the page as it ships. Never part of /healthz.
+const config = createConfig({
+  manifest: JSON.parse(await readFile(path.join(DIST, 'ewo.config.json'), 'utf8')),
+  url: process.env.DASHBOARD_URL ?? '',
+});
+config.start();
+
+// The built page, read once, and with the current values in it (#ewo-config, a data block the CSP
+// allows), made again only when they change.
+let built = null;
+let template = { etag: '', html: '' };
 
 async function resolveFile(pathname) {
   let decoded;
@@ -109,9 +124,10 @@ function send(req, res, status, headers, raw, ext) {
 
 /** The page for an address: a tool's, the licences', the home's, or the home's with a 404. */
 async function servePage(req, res, pathname) {
-  template ??= await readFile(path.join(DIST, 'index.html'), 'utf8');
+  built ??= await readFile(path.join(DIST, 'index.html'), 'utf8');
+  if (template.etag !== config.etag()) template = { etag: config.etag(), html: config.inject(built) };
   const lang = /^\s*de\b/i.test(req.headers['accept-language'] ?? '') ? 'de' : 'en';
-  const page = pages.render(template, pathname, lang);
+  const page = pages.render(template.html, pathname, lang);
   const headers = { 'content-type': MIME['.html'], 'cache-control': 'no-cache', vary: 'accept-language' };
   send(req, res, page.status, headers, Buffer.from(page.html), '.html');
 }
@@ -135,6 +151,8 @@ async function serveStatic(req, res) {
     res.writeHead(404, { 'content-type': 'text/plain' }).end('Not found');
     return;
   }
+  // The page by another spelling of its name still carries Dashboard's values.
+  if (entry.file === path.join(DIST, 'index.html')) return servePage(req, res, '/');
 
   const ext = path.extname(entry.file);
   const headers = {

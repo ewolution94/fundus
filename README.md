@@ -94,6 +94,7 @@ A push to `release` runs the checks (`ci.yml`) and publishes `ghcr.io/ewolution9
 | `HOST` | `0.0.0.0` | |
 | `FUNDUS_ORIGIN` | `https://fundus.ewolution.cloud` | The origin in canonical links, link previews and the sitemap. |
 | `FUNDUS_CENSUS` | off | Census's ingest origin (`http://census:4901` on the `ewolution` network). |
+| `DASHBOARD_URL` | off | Dashboard's apps' port (`http://dashboard:8081` on the `ewolution` network): the language and theme a device that hasn't picked starts from (the family's, or Fundus's own). Off or down: the built-in ones, as before. |
 
 ## Project layout
 
